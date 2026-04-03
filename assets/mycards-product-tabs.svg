@@ -1,0 +1,46 @@
+<svg width="385" height="28" viewBox="0 0 385 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="90" height="28" rx="14" fill="white"/>
+  <text
+    x="45"
+    y="14"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="black"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="12"
+    font-weight="600"
+  >Credit Card</text>
+  <rect x="98" width="86" height="28" rx="14" fill="white" fill-opacity="0.1"/>
+  <text
+    x="141"
+    y="14"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="white"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="12"
+    font-weight="600"
+  >Debit Card</text>
+  <rect x="192" width="70" height="28" rx="14" fill="white" fill-opacity="0.1"/>
+  <text
+    x="227"
+    y="14"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="white"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="12"
+    font-weight="600"
+  >FastTag</text>
+  <rect x="270" width="115" height="28" rx="14" fill="white" fill-opacity="0.1"/>
+  <text
+    x="327.5"
+    y="14"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="white"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="12"
+    font-weight="600"
+  >Consumer Loan</text>
+</svg>

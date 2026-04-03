@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Verify OTP — MyCards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      html::-webkit-scrollbar {
+        display: none;
+      }
+      body {
+        font-family: Inter, system-ui, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      body::-webkit-scrollbar {
+        display: none;
+      }
+      .frame-root {
+        width: 360px;
+        height: 800px;
+      }
+      /* WalletFinal animation: start far below, then move to center */
+      /* Credit cards: separate layers, animate from translateY(1000px) to settle */
+      .card-layer {
+        opacity: 0;
+        /* Keep X centered during Y animation */
+        transform: translateX(-50%) translateY(1000px);
+        will-change: transform, opacity;
+        /* Cards now start together; duration is extended so the overall end time stays the same */
+        transition: transform 1150ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 200ms ease-out;
+        pointer-events: none;
+      }
+      .card-layer.card-in {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0px);
+        pointer-events: auto;
+        cursor: pointer;
+      }
+      #wallet-final {
+        transform: translateX(-50%) translateY(-50%) translateY(1000px) scale(0.9);
+        transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 450ms ease-out;
+        opacity: 1;
+      }
+      #wallet-final.wallet-in {
+        /* First animation: move to center + rotation, no scale change yet */
+        transform: translateX(-50%) translateY(-50%) translateY(0px) rotate(-10deg) scale(0.85);
+      }
+      #wallet-final.wallet-resize {
+        /* End of first animation: set size to 95% instantly (no animation at middle) */
+        transition: none;
+        transform: translateX(-50%) translateY(-50%) translateY(0px) rotate(-10deg) scale(0.85);
+      }
+      #wallet-final.wallet-bottom {
+        /* End of second animation: return to 100% size (base scale) */
+        transform: translateX(-50%) translateY(-50%) translateY(var(--wallet-delta, 0px)) rotate(0deg)
+          scale(0.9);
+      }
+      /* Slide wallet out of the 800px frame when the Verify CTA is shown */
+      #wallet-final.wallet-exit {
+        transform: translateX(-50%) translateY(-50%)
+          translateY(calc(var(--wallet-delta, 0px) + 520px)) rotate(0deg) scale(0.9);
+        opacity: 0;
+        transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 450ms ease-out;
+        pointer-events: none;
+      }
+      /* Post–Verify CTA: wallet starts below seated position, then rises with cards */
+      #wallet-final.wallet-rise-start {
+        transform: translateX(-50%) translateY(-50%)
+          translateY(calc(var(--wallet-delta, 0px) + 420px)) rotate(0deg) scale(0.9);
+        opacity: 1;
+        transition: none;
+        pointer-events: none;
+      }
+      /* Post–final-stack card pick: wallet exits downward */
+      #wallet-final.wallet-drop-away {
+        transform: translateX(-50%) translateY(-50%)
+          translateY(calc(var(--wallet-delta, 0px) + 820px)) rotate(0deg) scale(0.9);
+        opacity: 0;
+        transition: transform 750ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 550ms ease-out;
+        pointer-events: none;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: { DEFAULT: "#1c3fca", hover: "#152f9e" },
+            },
+            boxShadow: {
+              sheet: "0 -8px 24px rgba(0, 0, 0, 0.08)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="min-h-screen bg-neutral-800 flex items-center justify-center p-0 sm:py-6">
+    <div class="frame-root relative overflow-hidden rounded-none bg-white flex flex-col w-[360px] h-[800px] flex-shrink-0">
+      <!-- Step: show only WalletFinal; hide all other elements -->
+      <!-- Top Bar: visible above all layers (clipped from Figma verify background) -->
+      <div
+        id="verify-top-bar"
+        aria-hidden="true"
+        class="absolute left-0 top-0 w-[360px] h-[96px] overflow-hidden z-[100] pointer-events-none"
+      >
+        <img
+          src="assets/verify-bg.png"
+          alt=""
+          draggable="false"
+          class="absolute left-0 top-0 w-[360px] h-[800px] select-none pointer-events-none object-fill"
+        />
+      </div>
+
+      <!-- Info layer from Figma node 881:85873 -->
+      <div
+        id="info-layer"
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[328px] flex flex-col items-center gap-[16px] z-[20] pointer-events-none opacity-0 transition-[top,transform,opacity] duration-[600ms] ease-out"
+        aria-hidden="true"
+      >
+        <div class="relative w-[160px] h-[160px] shrink-0">
+          <img
+            src="assets/c9edcfae67445f3b52f45179a05ee41d53627907.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[153px] h-[109px] object-contain"
+          />
+          <img
+            src="assets/6566b437c54ef9890f06c659a00acc2afaa446cb.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-[104.51px] top-[50.44px] -translate-x-1/2 -translate-y-1/2 w-[21.098px] h-[22.24px] object-contain"
+          />
+          <img
+            src="assets/52f238cbdfb30badf7d57feaa6ebdeffb5f58e97.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-[111.27px] top-[94.41px] -translate-x-1/2 -translate-y-1/2 w-[74.103px] h-[64.052px] object-contain"
+          />
+          <img
+            src="assets/3d016b563f58cd39b4785196e89197ed1168a9bb.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-[18.9px] top-[91.25px] -translate-x-1/2 -translate-y-1/2 w-[19.806px] h-[17.776px] object-contain"
+          />
+          <img
+            src="assets/60ad7379516791606593790328ac9ecb62e15d26.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-[65.54px] top-[76.5px] -translate-x-1/2 -translate-y-1/2 w-[75.485px] h-[106.969px] object-contain"
+          />
+          <img
+            src="assets/ce18d24cee69235ce9abacb329806eedbeb23641.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-[71.65px] top-[37.53px] -translate-x-1/2 -translate-y-1/2 w-[28.315px] h-[9.304px] object-contain"
+          />
+          <img
+            src="assets/5d722a266ce7e6e6a1357ba42ebaae72f43d71dd.svg"
+            alt=""
+            draggable="false"
+            class="absolute left-[61.87px] top-[78.5px] -translate-x-1/2 -translate-y-1/2 w-[41.062px] h-[38.317px] object-contain"
+          />
+        </div>
+        <p
+          id="info-layer-title"
+          class="text-[16px] font-semibold text-black leading-none tracking-[-0.32px] whitespace-nowrap"
+        >
+          Let’s Verify if It’s You
+        </p>
+        <div
+          id="info-layer-subtext"
+          class="w-[328px] text-center text-[#4b5563] text-[12px] leading-[1.4] opacity-80"
+        >
+          <p>We’ll auto-add all your cards and other</p>
+          <p>linked products</p>
+        </div>
+      </div>
+
+      <!-- Separate cards (use exact card PNGs) -->
+      <img
+        id="card-infinia"
+        src="assets/card-infinia.png"
+        alt=""
+        draggable="false"
+        aria-hidden="true"
+        class="card-layer absolute left-1/2 top-[502px] w-[312px] h-[200px] object-cover rounded-[12px] z-[6] pointer-events-auto select-none cursor-pointer"
+      />
+      <img
+        id="card-tanue"
+        src="assets/card-tatanuo.png"
+        alt=""
+        draggable="false"
+        aria-hidden="true"
+        class="card-layer absolute left-1/2 top-[553px] w-[312px] h-[200px] object-cover rounded-[12px] z-[6] pointer-events-auto select-none cursor-pointer"
+      />
+      <img
+        id="card-swiggy"
+        src="assets/card-swiggy.png"
+        alt=""
+        draggable="false"
+        aria-hidden="true"
+        class="card-layer absolute left-1/2 top-[604px] w-[312px] h-[200px] object-cover rounded-[12px] z-[6] pointer-events-auto select-none cursor-pointer"
+      />
+      <img
+        id="card-millenia"
+        src="assets/card-millenia.png"
+        alt=""
+        draggable="false"
+        aria-hidden="true"
+        class="card-layer absolute left-1/2 top-[655px] w-[312px] h-[200px] object-cover rounded-[12px] z-[6] pointer-events-auto select-none cursor-pointer"
+      />
+
+      <p
+        id="card-select-text"
+        class="absolute left-1/2 top-[490px] -translate-x-1/2 z-[30] text-[12px] font-semibold text-[#00875F] whitespace-nowrap opacity-0 transition-opacity duration-300 pointer-events-none"
+      >
+        Select any card to verify
+      </p>
+
+      <button
+        id="choose-another-card"
+        type="button"
+        class="absolute left-1/2 top-[515px] -translate-x-1/2 z-[30] text-[12px] font-semibold text-[#1c3fca] whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 hover:underline"
+      >
+        Choose Another Card
+      </button>
+
+      <button
+        id="verify-card-cta"
+        type="button"
+        class="absolute left-1/2 bottom-[18px] -translate-x-1/2 z-[35] w-[312px] h-[42px] rounded-[14px] bg-[#2443c7] text-white text-[16px] font-semibold leading-none flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300"
+      >
+        Verify
+      </button>
+
+      <!-- Last-4 digits display (replaces the 4 boxes that were inside the keyboard) -->
+      <div
+        id="card-verify-digits"
+        class="absolute left-[290px] top-[420px] -translate-x-1/2 z-[6] opacity-0 pointer-events-none will-change-[top,opacity]"
+        aria-hidden="true"
+      >
+        <span
+          id="digit-display"
+          class="w-[86px] h-[44px] flex items-center justify-center text-[16px] font-medium leading-none tracking-[2px] text-white translate-x-[-8px] -translate-y-[10px]"
+        ></span>
+      </div>
+
+      <!-- 4-digit keypad for last-4 verification -->
+      <div
+        id="card-verify-keyboard"
+        class="absolute left-0 bottom-0 z-[40] w-[360px] h-[306.26px] overflow-hidden opacity-0 pointer-events-none translate-y-0 transition-[opacity,transform] duration-300 ease-out"
+        aria-hidden="true"
+      >
+        <div class="relative w-[360px] h-[306.26px]">
+          <!-- Exact Figma keyboard image -->
+          <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <img
+              alt=""
+              draggable="false"
+              src="assets/c75674c7c7e4e495d6fde5f372e8f51eb6c6f772.png"
+              class="absolute left-0 w-full max-w-none"
+              style="height: 254.84%; top: -154.84%;"
+            />
+          </div>
+
+          <!-- Keypad: 1–9, 0, Back + Done — invisible hit targets (opacity-0); bitmap shows underneath. -->
+          <div class="absolute inset-0">
+            <div
+              id="keypad-buttons"
+              class="absolute left-[12px] right-[12px] top-[38px] grid grid-cols-3 grid-rows-4 gap-x-[10px] gap-y-[10px] z-[1] touch-manipulation opacity-0"
+              role="group"
+              aria-label="Numeric keypad"
+            >
+              <button type="button" class="keypad-key min-h-[54px] w-full rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="1" aria-label="1">1</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="2" aria-label="2">2</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="3" aria-label="3">3</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[20px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="4" aria-label="4">4</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[20px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="5" aria-label="5">5</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[20px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="6" aria-label="6">6</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[40px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="7" aria-label="7">7</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[40px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="8" aria-label="8">8</button>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[40px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="9" aria-label="9">9</button>
+              <div class="min-h-[54px] w-full pointer-events-none select-none" aria-hidden="true"></div>
+              <button type="button" class="keypad-key min-h-[54px] w-full -translate-y-[48px] rounded-[10px] bg-white text-[22px] font-medium text-neutral-900 shadow-sm border border-neutral-200/90 cursor-pointer select-none active:scale-[0.98] transition-transform" data-keypad-digit="0" aria-label="0">0</button>
+              <button
+                type="button"
+                id="keypad-back-space"
+                class="min-h-[54px] w-full -translate-y-[48px] rounded-[10px] bg-white flex items-center justify-center border border-neutral-200/90 shadow-sm cursor-pointer touch-manipulation select-none active:scale-[0.98] transition-transform"
+                aria-label="Backspace"
+              >
+                <img
+                  src="assets/keypad-backspace.png"
+                  alt=""
+                  width="28"
+                  height="28"
+                  draggable="false"
+                  class="pointer-events-none object-contain select-none max-h-[28px] max-w-[40px]"
+                />
+              </button>
+            </div>
+
+            <!-- Done CTA hotspot -->
+            <button
+              type="button"
+              id="keyboard-done"
+              class="absolute right-[6px] top-[4px] z-[2] w-[70px] h-[30px] opacity-0 bg-transparent border-0 p-0 cursor-pointer"
+              aria-label="Done"
+            ></button>
+          </div>
+        </div>
+      </div>
+
+      <img
+        src="assets/wallet-final.png"
+        alt=""
+        draggable="false"
+        id="wallet-final"
+        class="absolute left-1/2 top-1/2 w-[360px] h-auto object-contain pointer-events-none select-none z-[10]"
+      />
+    </div>
+    <script>
+      // Start wallet slide-up animation on load
+      (function () {
+        var el = document.getElementById("wallet-final");
+        var topBar = document.getElementById("verify-top-bar");
+        var infoLayer = document.getElementById("info-layer");
+        var infoLayerTitle = document.getElementById("info-layer-title");
+        var infoLayerSubtext = document.getElementById("info-layer-subtext");
+        var cardSelectText = document.getElementById("card-select-text");
+        var chooseAnotherCard = document.getElementById("choose-another-card");
+        var verifyCardCta = document.getElementById("verify-card-cta");
+        var keyboard = document.getElementById("card-verify-keyboard");
+        var keyboardDone = document.getElementById("keyboard-done");
+        var digitsWrap = document.getElementById("card-verify-digits");
+        var cards = [
+          document.getElementById("card-infinia"),
+          document.getElementById("card-tanue"),
+          document.getElementById("card-swiggy"),
+          document.getElementById("card-millenia"),
+        ];
+        var isVerifying = false;
+        var activeCard = null;
+        var enteredDigits = [];
+        var postVerifyFinalStack = false;
+        var swiggyPostVerifyPicked = false;
+        var lastVerifiedStackIndex = -1;
+        var SWIGGY_STACK_INDEX = 2;
+        /* Post–verify pick: Swiggy moves this many px up from its stack slot (top). */
+        var SWIGGY_PICK_UP_PX = 500;
+        /* digit strip sits this far below the active card’s top (px); same offset after Done */
+        var DIGITS_TOP_OFFSET = 118;
+        var CARD_TOP_KEYBOARD = 310;
+        var CARD_TOP_AFTER_DONE = 470;
+        var DIGITS_LEFT = "290px";
+        var CARD_MOVE_EASE = "top 600ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+        var CARD_STACK_TOPS_PX = [502, 553, 604, 655];
+        var SWIGGY_PICK_TOP_PX = CARD_STACK_TOPS_PX[SWIGGY_STACK_INDEX] - SWIGGY_PICK_UP_PX;
+        var STACK_RETURN_RISE_PX = 400;
+        var STACK_RETURN_ANIM_MS = 900;
+        var INFO_TITLE_VERIFY = "Let’s Verify if It’s You";
+        var INFO_TITLE_STACK = "Select Card to Continue";
+        var CARD_DETAILS_PAGE = "card_details.html?card=swiggy";
+        var SWIGGY_PICK_ANIM_MS = 600;
+
+        function restoreInfoLayerVerifyCopy() {
+          if (infoLayerTitle) infoLayerTitle.textContent = INFO_TITLE_VERIFY;
+          if (infoLayerSubtext) infoLayerSubtext.classList.remove("hidden");
+        }
+
+        function stackIndexOfCard(cardEl) {
+          for (var si = 0; si < cards.length; si++) {
+            if (cards[si] === cardEl) return si;
+          }
+          return -1;
+        }
+
+        function renderDigits() {
+          var display = document.getElementById("digit-display");
+          if (display) display.textContent = enteredDigits.join("");
+          if (keyboardDone) {
+            var complete = enteredDigits.length === 4;
+            keyboardDone.disabled = !complete;
+            keyboardDone.setAttribute("aria-disabled", complete ? "false" : "true");
+          }
+        }
+
+        function appendDigit(ch) {
+          if (enteredDigits.length >= 4) return;
+          enteredDigits.push(String(ch));
+          renderDigits();
+        }
+
+        function keypadRemoveLastDigit() {
+          if (enteredDigits.length === 0) return;
+          enteredDigits.pop();
+          renderDigits();
+        }
+
+        function resetCardVerifyUI(opts) {
+          opts = opts || {};
+          var deferStackHint = opts.deferStackHint === true;
+          isVerifying = false;
+          enteredDigits = [];
+          renderDigits();
+
+          if (el) {
+            el.classList.remove("wallet-exit", "wallet-drop-away");
+            el.classList.remove("wallet-rise-start");
+            el.classList.add("wallet-bottom");
+            el.style.opacity = "";
+            el.style.transition = "";
+          }
+
+          if (keyboard) {
+            keyboard.classList.add("opacity-0");
+            keyboard.classList.remove("opacity-100");
+            keyboard.classList.add("pointer-events-none");
+            keyboard.classList.remove("pointer-events-auto");
+            keyboard.classList.remove("translate-y-[320px]");
+            keyboard.classList.add("translate-y-0");
+            keyboard.setAttribute("aria-hidden", "true");
+          }
+
+          if (chooseAnotherCard) {
+            chooseAnotherCard.classList.add("opacity-0");
+            chooseAnotherCard.classList.remove("opacity-100");
+            chooseAnotherCard.classList.add("pointer-events-none");
+            chooseAnotherCard.classList.remove("pointer-events-auto");
+          }
+
+          if (digitsWrap) {
+            digitsWrap.classList.add("opacity-0");
+            digitsWrap.classList.remove("opacity-100");
+            digitsWrap.classList.add("pointer-events-none");
+            digitsWrap.setAttribute("aria-hidden", "true");
+            digitsWrap.style.top = "";
+            digitsWrap.style.left = "";
+            digitsWrap.style.transition = "";
+            digitsWrap.style.zIndex = "";
+          }
+
+          if (verifyCardCta) {
+            verifyCardCta.classList.add("opacity-0");
+            verifyCardCta.classList.remove("opacity-100");
+            verifyCardCta.classList.add("pointer-events-none");
+            verifyCardCta.classList.remove("pointer-events-auto");
+          }
+
+          if (cardSelectText) {
+            cardSelectText.textContent = "Select any card to verify";
+            cardSelectText.style.top = "";
+            cardSelectText.style.color = "";
+            cardSelectText.style.fontWeight = "";
+            cardSelectText.style.fontSize = "";
+            if (deferStackHint) {
+              cardSelectText.classList.add("opacity-0");
+              cardSelectText.classList.remove("opacity-100");
+              cardSelectText.setAttribute("aria-hidden", "true");
+            } else {
+              cardSelectText.classList.remove("opacity-0");
+              cardSelectText.classList.add("opacity-100");
+              cardSelectText.removeAttribute("aria-hidden");
+            }
+          }
+          if (chooseAnotherCard) {
+            chooseAnotherCard.textContent = "Choose Another Card";
+            chooseAnotherCard.style.top = "";
+          }
+
+          restoreInfoLayerVerifyCopy();
+
+          // Restore big info layer placement.
+          if (infoLayer) {
+            infoLayer.classList.remove("opacity-0");
+            infoLayer.classList.add("opacity-100");
+            infoLayer.style.top = "";
+            infoLayer.style.transform = "";
+            infoLayer.style.opacity = "";
+            infoLayer.style.transition = "";
+          }
+
+          if (topBar) {
+            topBar.style.transition = "";
+            topBar.style.transform = "";
+            topBar.style.opacity = "";
+          }
+
+          // Restore all cards to their animated positions.
+          for (var i = 0; i < cards.length; i++) {
+            var c = cards[i];
+            if (!c) continue;
+            c.style.opacity = "";
+            c.style.pointerEvents = "";
+            c.style.transform = "";
+            c.style.transition = "";
+            c.style.top = "";
+            c.style.zIndex = "";
+            c.style.cursor = "";
+          }
+          activeCard = null;
+          postVerifyFinalStack = false;
+          swiggyPostVerifyPicked = false;
+          lastVerifiedStackIndex = -1;
+        }
+
+        function animateSwiggyPostVerifyPick() {
+          if (!postVerifyFinalStack || swiggyPostVerifyPicked) return;
+          swiggyPostVerifyPicked = true;
+          var sw = cards[SWIGGY_STACK_INDEX];
+          if (!sw) return;
+          var pickEase = "600ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+          var exitEase = "750ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+
+          for (var ci = 0; ci < cards.length; ci++) {
+            if (ci === SWIGGY_STACK_INDEX) continue;
+            var oc = cards[ci];
+            if (!oc) continue;
+            oc.style.transition = "transform " + exitEase + ", opacity 560ms ease-out";
+            oc.style.transform = "translateX(-50%) translateY(920px)";
+            oc.style.opacity = "0";
+          }
+
+          if (el) {
+            el.classList.remove("wallet-rise-start", "wallet-exit");
+            el.classList.add("wallet-drop-away");
+          }
+
+          if (topBar) {
+            topBar.style.transition =
+              "transform " + exitEase + ", opacity 620ms cubic-bezier(0.25, 0.1, 0.25, 1)";
+            topBar.style.transform = "translateY(-40px)";
+            topBar.style.opacity = "0";
+          }
+
+          if (infoLayer) {
+            infoLayer.style.transition =
+              "transform " + exitEase + ", opacity 560ms cubic-bezier(0.25, 0.1, 0.25, 1)";
+            infoLayer.style.transform = "translateX(-50%) translateY(-36px)";
+            infoLayer.style.opacity = "0";
+          }
+
+          if (chooseAnotherCard) {
+            chooseAnotherCard.style.transition = "opacity 450ms ease-out";
+            chooseAnotherCard.classList.add("opacity-0", "pointer-events-none");
+            chooseAnotherCard.classList.remove("opacity-100", "pointer-events-auto");
+          }
+
+          sw.style.pointerEvents = "none";
+          sw.style.cursor = "default";
+          sw.style.zIndex = "40";
+          sw.style.transition = "top " + pickEase + ", transform " + pickEase;
+          sw.style.top = SWIGGY_PICK_TOP_PX + "px";
+          sw.style.transform = "translateX(-50%) translateY(0) scale(0.9)";
+          if (
+            lastVerifiedStackIndex === SWIGGY_STACK_INDEX &&
+            digitsWrap &&
+            digitsWrap.classList.contains("opacity-100")
+          ) {
+            digitsWrap.style.zIndex = "41";
+            digitsWrap.style.transition = "top " + pickEase;
+            digitsWrap.style.top = SWIGGY_PICK_TOP_PX + DIGITS_TOP_OFFSET + "px";
+          }
+          window.setTimeout(function () {
+            if (sw) sw.style.transition = "";
+            if (digitsWrap) digitsWrap.style.transition = "";
+            window.location.href = CARD_DETAILS_PAGE;
+          }, SWIGGY_PICK_ANIM_MS);
+        }
+
+        function startCardVerifyForCard(cardEl) {
+          if (!cardEl || isVerifying) return;
+          isVerifying = true;
+          activeCard = cardEl;
+
+          restoreInfoLayerVerifyCopy();
+
+          if (infoLayer) {
+            infoLayer.style.top = "-78px";
+            infoLayer.classList.remove("-translate-y-1/2");
+            infoLayer.classList.add("-translate-y-0");
+            infoLayer.classList.remove("opacity-0");
+            infoLayer.classList.add("opacity-100");
+            infoLayer.removeAttribute("aria-hidden");
+          }
+
+          // Move selected card into the lower panel area and fade others.
+          var cardStartTop = parseFloat(getComputedStyle(cardEl).top, 10);
+          if (isNaN(cardStartTop)) cardStartTop = CARD_TOP_KEYBOARD;
+
+          for (var i = 0; i < cards.length; i++) {
+            var c = cards[i];
+            if (!c) continue;
+            if (c === cardEl) {
+              c.style.transition = "top 600ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+              c.style.top = CARD_TOP_KEYBOARD + "px";
+              c.style.transform = "translateX(-50%) translateY(0)";
+              c.style.zIndex = "35";
+              c.style.opacity = "1";
+            } else {
+              c.style.transition = "opacity 200ms ease-out";
+              c.style.opacity = "0";
+              c.style.pointerEvents = "none";
+            }
+          }
+
+          // Swap label + show choose another card.
+          if (cardSelectText) {
+            cardSelectText.textContent = "Enter last 4 digits to verify this Card";
+            cardSelectText.style.top = "258px";
+            cardSelectText.style.color = "";
+            cardSelectText.style.fontWeight = "";
+            cardSelectText.style.fontSize = "";
+            cardSelectText.classList.remove("opacity-0");
+            cardSelectText.classList.add("opacity-100");
+            cardSelectText.removeAttribute("aria-hidden");
+          }
+          if (chooseAnotherCard) {
+            chooseAnotherCard.textContent = "Choose Another Card";
+            chooseAnotherCard.style.top = "288px";
+            chooseAnotherCard.style.transition = "";
+            chooseAnotherCard.classList.remove("opacity-0");
+            chooseAnotherCard.classList.add("opacity-100");
+            chooseAnotherCard.classList.remove("pointer-events-none");
+            chooseAnotherCard.classList.add("pointer-events-auto");
+          }
+
+          // Show keypad.
+          if (keyboard) {
+            keyboard.classList.remove("opacity-0");
+            keyboard.classList.add("opacity-100");
+            keyboard.classList.remove("pointer-events-none");
+            keyboard.classList.add("pointer-events-auto");
+            keyboard.setAttribute("aria-hidden", "false");
+          }
+
+          if (digitsWrap) {
+            digitsWrap.style.left = DIGITS_LEFT;
+            digitsWrap.style.zIndex = "35";
+            digitsWrap.style.transition = "none";
+            digitsWrap.style.top = cardStartTop + DIGITS_TOP_OFFSET + "px";
+            void digitsWrap.offsetHeight;
+            digitsWrap.style.transition = CARD_MOVE_EASE + ", opacity 300ms ease-out";
+            digitsWrap.classList.remove("opacity-0");
+            digitsWrap.classList.add("opacity-100");
+            digitsWrap.classList.add("pointer-events-none");
+            digitsWrap.setAttribute("aria-hidden", "false");
+            requestAnimationFrame(function () {
+              digitsWrap.style.top = CARD_TOP_KEYBOARD + DIGITS_TOP_OFFSET + "px";
+            });
+          }
+
+          resetCardVerifyUI.digitsInit = true;
+          enteredDigits = [];
+          renderDigits();
+        }
+
+        function dismissKeyboardAndMoveContentDown() {
+          if (!isVerifying) return;
+
+          if (keyboard) {
+            keyboard.classList.add("translate-y-[320px]");
+            keyboard.classList.remove("translate-y-0");
+            keyboard.classList.add("opacity-0");
+            keyboard.classList.remove("opacity-100");
+            keyboard.classList.add("pointer-events-none");
+            keyboard.classList.remove("pointer-events-auto");
+          }
+
+          // Move content down to final state, matching reference layout.
+          if (infoLayer) {
+            infoLayer.style.top = "82px";
+          }
+          if (cardSelectText) {
+            cardSelectText.style.top = "418px";
+          }
+          if (chooseAnotherCard) {
+            chooseAnotherCard.style.top = "448px";
+          }
+          if (activeCard) {
+            activeCard.style.transition = CARD_MOVE_EASE;
+            activeCard.style.top = CARD_TOP_AFTER_DONE + "px";
+          }
+          if (digitsWrap && activeCard) {
+            digitsWrap.style.zIndex = "35";
+            digitsWrap.style.transition = CARD_MOVE_EASE + ", opacity 300ms ease-out";
+            digitsWrap.style.top = CARD_TOP_AFTER_DONE + DIGITS_TOP_OFFSET + "px";
+          }
+          if (verifyCardCta) {
+            verifyCardCta.classList.remove("opacity-0");
+            verifyCardCta.classList.add("opacity-100");
+            verifyCardCta.classList.remove("pointer-events-none");
+            verifyCardCta.classList.add("pointer-events-auto");
+          }
+
+          if (el) {
+            el.classList.add("wallet-exit");
+          }
+        }
+
+        function returnToStackAfterVerify() {
+          var prevActive = activeCard;
+          var activeIdx = -1;
+          if (prevActive) {
+            for (var ai = 0; ai < cards.length; ai++) {
+              if (cards[ai] === prevActive) {
+                activeIdx = ai;
+                break;
+              }
+            }
+          }
+
+          isVerifying = false;
+          activeCard = null;
+          lastVerifiedStackIndex = activeIdx;
+          postVerifyFinalStack = false;
+          swiggyPostVerifyPicked = false;
+          renderDigits();
+
+          if (el) {
+            el.classList.remove("wallet-exit", "wallet-drop-away");
+            el.classList.remove("wallet-bottom");
+            el.classList.add("wallet-rise-start");
+            void el.offsetHeight;
+            el.style.transition =
+              "transform " + STACK_RETURN_ANIM_MS + "ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+            el.classList.remove("wallet-rise-start");
+            el.classList.add("wallet-bottom");
+            window.setTimeout(function () {
+              el.style.transition = "";
+            }, STACK_RETURN_ANIM_MS);
+          }
+          if (keyboard) {
+            keyboard.classList.add("opacity-0", "pointer-events-none", "translate-y-0");
+            keyboard.classList.remove("opacity-100", "pointer-events-auto", "translate-y-[320px]");
+            keyboard.setAttribute("aria-hidden", "true");
+          }
+          if (digitsWrap) {
+            digitsWrap.classList.add("pointer-events-none");
+            digitsWrap.classList.remove("opacity-0");
+            digitsWrap.classList.add("opacity-100");
+            digitsWrap.setAttribute("aria-hidden", "false");
+            if (activeIdx >= 0) {
+              var digitFromTop =
+                parseFloat(digitsWrap.style.top, 10) || CARD_TOP_AFTER_DONE + DIGITS_TOP_OFFSET;
+              var digitToTop = CARD_STACK_TOPS_PX[activeIdx] + DIGITS_TOP_OFFSET;
+              digitsWrap.style.zIndex = String(6 + activeIdx);
+              digitsWrap.style.left = DIGITS_LEFT;
+              digitsWrap.style.transition = "none";
+              digitsWrap.style.top = digitFromTop + "px";
+              void digitsWrap.offsetHeight;
+              digitsWrap.style.transition =
+                "top " + STACK_RETURN_ANIM_MS + "ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+              digitsWrap.style.top = digitToTop + "px";
+              window.setTimeout(function () {
+                if (digitsWrap) digitsWrap.style.transition = "";
+              }, STACK_RETURN_ANIM_MS);
+            } else {
+              digitsWrap.style.transition = "opacity 280ms ease-out";
+              digitsWrap.classList.add("opacity-0");
+              digitsWrap.classList.remove("opacity-100");
+              digitsWrap.setAttribute("aria-hidden", "true");
+              window.setTimeout(function () {
+                if (digitsWrap) {
+                  digitsWrap.style.top = "";
+                  digitsWrap.style.left = "";
+                  digitsWrap.style.transition = "";
+                }
+              }, 300);
+            }
+          }
+          if (verifyCardCta) {
+            verifyCardCta.classList.add("opacity-0", "pointer-events-none");
+            verifyCardCta.classList.remove("opacity-100", "pointer-events-auto");
+          }
+
+          if (infoLayer) {
+            infoLayer.style.top = "";
+            infoLayer.classList.remove("top-1/2", "-translate-y-1/2", "opacity-0");
+            infoLayer.classList.add("top-[116px]", "-translate-y-0", "opacity-100");
+          }
+          if (infoLayerTitle) {
+            infoLayerTitle.textContent = INFO_TITLE_STACK;
+          }
+          if (infoLayerSubtext) {
+            infoLayerSubtext.classList.add("hidden");
+          }
+          if (cardSelectText) {
+            cardSelectText.textContent = "";
+            cardSelectText.style.top = "";
+            cardSelectText.style.color = "";
+            cardSelectText.style.fontWeight = "";
+            cardSelectText.style.fontSize = "";
+            cardSelectText.classList.add("opacity-0", "pointer-events-none");
+            cardSelectText.classList.remove("opacity-100");
+            cardSelectText.setAttribute("aria-hidden", "true");
+          }
+          if (chooseAnotherCard) {
+            chooseAnotherCard.textContent = "Add Card";
+            chooseAnotherCard.style.top = "490px";
+            chooseAnotherCard.classList.remove("opacity-0", "pointer-events-none");
+            chooseAnotherCard.classList.add("opacity-100", "pointer-events-auto");
+          }
+
+          var stackEase = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+          var stackMs = STACK_RETURN_ANIM_MS;
+
+          for (var i = 0; i < cards.length; i++) {
+            var c = cards[i];
+            if (!c) continue;
+            var stackTop = CARD_STACK_TOPS_PX[i];
+            c.style.pointerEvents = "none";
+            c.style.zIndex = String(6 + i);
+            c.style.transition = "none";
+
+            if (i === activeIdx) {
+              var fromTop = parseFloat(getComputedStyle(c).top, 10);
+              if (isNaN(fromTop)) fromTop = CARD_TOP_AFTER_DONE;
+              c.style.top = fromTop + "px";
+              c.style.opacity = "1";
+              c.style.transform = "translateX(-50%) translateY(0)";
+            } else {
+              c.style.top = stackTop + "px";
+              c.style.opacity = "0";
+              c.style.transform =
+                "translateX(-50%) translateY(" + STACK_RETURN_RISE_PX + "px)";
+            }
+          }
+          void (cards[0] && cards[0].offsetHeight);
+
+          for (var j = 0; j < cards.length; j++) {
+            var cj = cards[j];
+            if (!cj) continue;
+            var stackTopJ = CARD_STACK_TOPS_PX[j];
+            if (j === activeIdx) {
+              cj.style.transition =
+                "top " + stackMs + "ms " + stackEase + ", transform " + stackMs + "ms " + stackEase;
+              cj.style.top = stackTopJ + "px";
+              cj.style.transform = "translateX(-50%) translateY(0)";
+              cj.style.opacity = "1";
+            } else {
+              cj.style.transition =
+                "transform " +
+                stackMs +
+                "ms " +
+                stackEase +
+                ", opacity 550ms ease-out";
+              cj.style.transform = "translateX(-50%) translateY(0)";
+              cj.style.opacity = "1";
+            }
+          }
+
+          window.setTimeout(function () {
+            postVerifyFinalStack = true;
+            for (var k = 0; k < cards.length; k++) {
+              var ck = cards[k];
+              if (!ck) continue;
+              ck.style.transition = "";
+              if (k === SWIGGY_STACK_INDEX) {
+                ck.style.pointerEvents = "auto";
+                ck.style.cursor = "pointer";
+              } else {
+                ck.style.pointerEvents = "none";
+                ck.style.cursor = "default";
+              }
+            }
+          }, stackMs);
+        }
+
+        // Card click handlers: all cards clickable after they appear; after Verify → final stack, only Swiggy (pick-up animation).
+        for (var i = 0; i < cards.length; i++) {
+          (function (idx) {
+            var c = cards[idx];
+            if (!c) return;
+            c.addEventListener("click", function () {
+              if (postVerifyFinalStack) {
+                if (idx === SWIGGY_STACK_INDEX) animateSwiggyPostVerifyPick();
+                return;
+              }
+              startCardVerifyForCard(c);
+            });
+          })(i);
+        }
+
+        var keypadButtons = document.getElementById("keypad-buttons");
+        if (keypadButtons) {
+          keypadButtons.addEventListener("click", function (e) {
+            if (!isVerifying) return;
+            var target = e.target;
+            if (!target || !target.closest) return;
+            if (target.closest("#keypad-back-space")) {
+              keypadRemoveLastDigit();
+              return;
+            }
+            var digitBtn = target.closest("button[data-keypad-digit]");
+            if (digitBtn) {
+              var d = digitBtn.getAttribute("data-keypad-digit");
+              if (d === null || d === "") return;
+              appendDigit(d);
+            }
+          });
+        }
+
+        document.addEventListener("keydown", function (e) {
+          if (!isVerifying || !keyboard) return;
+          if (keyboard.classList.contains("opacity-0")) return;
+          if (e.key !== "Backspace" && e.key !== "Delete") return;
+          e.preventDefault();
+          keypadRemoveLastDigit();
+        });
+
+        if (chooseAnotherCard) {
+          chooseAnotherCard.addEventListener("click", function () {
+            if (isVerifying) {
+              resetCardVerifyUI();
+              return;
+            }
+          });
+        }
+        if (verifyCardCta) {
+          verifyCardCta.addEventListener("click", function () {
+            returnToStackAfterVerify();
+          });
+        }
+        if (keyboardDone) {
+          keyboardDone.addEventListener("click", function () {
+            if (enteredDigits.length !== 4) return;
+            dismissKeyboardAndMoveContentDown();
+          });
+        }
+        if (!el) return;
+        // Ensure initial styles are applied before animating
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            el.classList.add("wallet-in");
+          });
+        });
+
+        // After the first animation ends, set the size to 95% instantly (no middle scaling animation).
+        setTimeout(function () {
+          el.classList.add("wallet-resize");
+        }, 720);
+
+        // After 3s, animate wallet to the bottom of the frame and reset rotation.
+        setTimeout(function () {
+          if (infoLayer) {
+            infoLayer.classList.remove("opacity-0");
+            infoLayer.classList.add("opacity-100");
+          }
+          var rect = el.getBoundingClientRect();
+          var h = rect.height || 0;
+          // Frame height is 800. With top:50% + translateY(-50%), the element center starts at y=400.
+          // To place bottom at y=800: center should be at 800 - h/2 => delta = 400 - h/2.
+          // Push an extra +200px down from the bottom-aligned position,
+          // then move 25px up.
+          var delta = 400 - h / 2 + 200 - 25;
+          el.style.setProperty("--wallet-delta", delta + "px");
+          el.classList.remove("wallet-in");
+          el.classList.remove("wallet-resize");
+          el.classList.add("wallet-bottom");
+        }, 3000);
+
+        // Card animation should start only after 4000ms total.
+        setTimeout(function () {
+          if (infoLayer) {
+            setTimeout(function () {
+              infoLayer.classList.remove("top-1/2", "-translate-y-1/2");
+              infoLayer.classList.add("top-[116px]", "-translate-y-0");
+            }, 300);
+          }
+          var staggerMs = 0;
+          for (var i = 0; i < cards.length; i++) {
+            if (!cards[i]) continue;
+            (function (idx) {
+              setTimeout(function () {
+                cards[idx].classList.add("card-in");
+              }, idx * staggerMs);
+            })(i);
+          }
+          // Ensure verify UI is hidden until a card is clicked; keep green hint hidden until cards finish sliding in (~1150ms).
+          resetCardVerifyUI({ deferStackHint: true });
+          if (cardSelectText) {
+            setTimeout(function () {
+              cardSelectText.classList.remove("opacity-0");
+              cardSelectText.classList.add("opacity-100");
+              cardSelectText.removeAttribute("aria-hidden");
+            }, 1200);
+          }
+        }, 4000);
+      })();
+    </script>
+  </body>
+</html>
+
