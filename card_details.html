@@ -27,22 +27,27 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
+        min-height: 100dvh;
+        padding: 0 12px;
+        box-sizing: border-box;
         /* Tailwind bg-neutral-800 */
         background: #262626;
       }
-      /* Mobile shell: white base + 360×800 gradient frame under app layers */
+      /* Mobile shell: responsive width (max 360), height capped by viewport or 800 */
       .mobile-page {
         position: relative;
-        width: 360px;
-        height: 800px;
+        width: 100%;
+        max-width: 360px;
+        height: min(100dvh, 800px);
+        min-height: min(100dvh, 800px);
         flex-shrink: 0;
       }
       .mobile-page__bg {
         position: absolute;
         left: 0;
         top: 0;
-        width: 360px;
-        height: 800px;
+        width: 100%;
+        height: 100%;
         background: #fff;
         z-index: 0;
         pointer-events: none;
@@ -51,8 +56,8 @@
         position: absolute;
         left: 0;
         top: 0;
-        width: 360px;
-        height: 800px;
+        width: 100%;
+        height: 100%;
         background: linear-gradient(135deg, #0c101f 0%, #131b34 40%);
         z-index: 1;
         pointer-events: none;
@@ -70,8 +75,9 @@
       .frame-root {
         position: relative;
         z-index: 2;
-        width: 360px;
-        height: 800px;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
         flex-shrink: 0;
         overflow: hidden;
         display: flex;
@@ -79,7 +85,7 @@
         background: transparent;
       }
       .frame-root__mycards-header {
-        width: 360px;
+        width: 100%;
         flex-shrink: 0;
         background-color: transparent;
         line-height: 0;
@@ -89,8 +95,11 @@
       }
       .frame-root__mycards-svg {
         display: block;
-        width: 360px;
-        height: 55px;
+        width: 100%;
+        height: auto;
+        max-height: 55px;
+        object-fit: contain;
+        object-position: left top;
       }
       .frame-root__product-tabs {
         padding: 8px 0 12px;
@@ -945,7 +954,7 @@
         overflow: hidden;
         padding-top: 0;
         padding-bottom: 0;
-        transform: translate3d(360px, 0, 0);
+        transform: translate3d(100%, 0, 0);
       }
       .frame-root.cd-intro .frame-root__creditcard-below {
         opacity: 0;
