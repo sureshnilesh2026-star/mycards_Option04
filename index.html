@@ -53,6 +53,7 @@
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
         background: linear-gradient(135deg, #080326 0%, #0e346b 100%);
       }
       .btn-loading svg {
@@ -132,6 +133,12 @@
       #otp-code-field .otp-dot.otp-dot--filled {
         background-color: #111827 !important;
       }
+      /* Hide caret / text flash on mobile — dots are the only visible digits */
+      #otp-raw {
+        caret-color: transparent;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+      }
     </style>
   </head>
   <body class="min-h-[100dvh] min-h-screen p-0 sm:pb-6 box-border w-full max-w-none">
@@ -153,7 +160,7 @@
       [Global overlay]
         L99 Toast #toast (fixed, z-50; hidden via opacity until script shows it)
     -->
-    <div class="frame-root relative w-full overflow-x-hidden rounded-none sm:shadow-2xl">
+    <div class="frame-root relative w-full rounded-none sm:shadow-2xl">
       <!-- Top menu bar: exact Figma export (360×48), see assets/menu-header.svg -->
       <header class="relative z-30 h-header w-full shrink-0 overflow-hidden">
         <img
@@ -192,7 +199,7 @@
 
       <!-- Bottom sheet: interactive layer (matches Figma spacing; graphics above are unchanged) -->
       <div
-        class="flex flex-col flex-none h-auto min-h-0 shrink-0 bg-white rounded-t-[24px] shadow-sheet relative z-20 overflow-x-hidden px-6 pt-0 pb-0"
+        class="flex flex-col flex-none h-auto min-h-0 shrink-0 bg-white rounded-t-[24px] shadow-sheet relative z-20 overflow-hidden px-6 pt-0 pb-0"
       >
         <!-- Login Details top border (4px gradient) -->
         <div
@@ -261,7 +268,7 @@
       <!-- OTP layer: bottom sheet — flush to frame bottom (height matches login sheet token) -->
       <div
         id="otp-backdrop"
-        class="absolute inset-0 bg-black/20 opacity-0 pointer-events-none transition-opacity duration-200 z-[45]"
+        class="absolute inset-0 bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 ease-out z-[45]"
         aria-hidden="true"
       ></div>
       <div
