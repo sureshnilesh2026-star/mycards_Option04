@@ -116,7 +116,7 @@
         flex: 1 1 auto;
         min-height: 0;
         width: 100%;
-        overflow-x: hidden;
+        overflow-x: visible;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
@@ -520,34 +520,40 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 32px;
         padding-top: 20px;
         padding-left: 0;
         padding-right: 0;
         padding-bottom: 24px;
         box-sizing: border-box;
-        overflow-x: hidden;
+        overflow-x: visible;
         overflow-y: visible;
       }
       .content1 {
         flex-shrink: 0;
         align-self: stretch;
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
+        width: calc(100% - 32px);
+        max-width: calc(100% - 32px);
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 16px;
+        margin-right: 16px;
         min-width: 0;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
         align-items: stretch;
         gap: 16px;
+        overflow-x: visible;
       }
       .content1__options {
         flex-shrink: 0;
-        width: auto;
+        align-self: stretch;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
-        margin-left: 16px;
-        margin-right: 16px;
+        margin-left: 0;
+        margin-right: 0;
         box-sizing: border-box;
       }
       .content1__options-img {
@@ -558,123 +564,151 @@
       }
       .content1__due {
         flex-shrink: 0;
-        width: auto;
+        align-self: stretch;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
-        margin-left: 16px;
-        margin-right: 16px;
+        margin-left: 0;
+        margin-right: 0;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .content1__due-top {
+        width: 100%;
+        background: #f3f6f9;
+        border-radius: 12px;
+        padding: 16px;
         box-sizing: border-box;
       }
-      .content1__due-card {
-        box-sizing: border-box;
+      .content1__due-top-row {
         width: 100%;
-        padding: 16px;
-        border-radius: 16px;
-        border: 1px solid #eceef0;
-        background: #fff;
-        box-shadow: 0 2px 12px rgba(12, 16, 31, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
       .content1__due-main {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 4px;
-      }
-      .content1__due-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 6px 10px;
-        width: 100%;
-      }
-      .content1__due-label {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: #374151;
-        line-height: 1.3;
+        color: #333333;
+        flex: 1 1 auto;
+        min-width: 0;
       }
       .content1__due-amount {
+        margin: 0;
+        color: #333333;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 20px;
         font-weight: 700;
-        color: #111827;
         line-height: 1.2;
-        letter-spacing: -0.02em;
       }
       .content1__due-date {
         margin: 0;
+        color: #333333;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 400;
-        color: #6b7280;
-        line-height: 1.35;
+        line-height: 1.4;
       }
       .content1__due-cta {
-        margin-top: 10px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 10px 20px;
-        border-radius: 12px;
+        height: 32px;
+        padding: 8px 16px;
+        border-radius: 8px;
         border: none;
         background: #1c3fca;
-        color: #fff;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        line-height: 1;
-        text-decoration: none;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .content1__due-cta:hover {
-        background: #152f9e;
-        color: #fff;
-      }
-      .content1__due-cta:focus-visible {
-        outline: 2px solid #1c3fca;
-        outline-offset: 2px;
-      }
-      .content1__due-stats {
-        margin-top: 16px;
-        padding-top: 14px;
-        border-top: 1px solid #f3f4f6;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px 16px;
-      }
-      .content1__due-stat {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        min-width: 0;
-      }
-      .content1__due-stat-label {
+        color: #ffffff;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 12px;
-        font-weight: 500;
-        color: #9ca3af;
-        line-height: 1.2;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
       }
-      .content1__due-stat-value {
+      .content1__due-bottom {
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid #e7eef4;
+        border-radius: 12px;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+      .content1__due-bottom-row {
+        width: 100%;
+        display: flex;
+        align-items: stretch;
+        gap: 16px;
+      }
+      .content1__due-col {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        color: #333333;
+      }
+      .content1__due-col--left {
+        flex: 1 1 0;
+      }
+      .content1__due-col--right {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+      .content1__due-stat-label {
+        margin: 0;
+        color: #333333;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
-        font-size: 15px;
-        font-weight: 600;
-        color: #111827;
+        font-size: 10px;
+        font-weight: 400;
+        line-height: 1.4;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .content1__due-stat-value {
+        margin: 0;
+        color: #333333;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 16px;
+        font-weight: 700;
         line-height: 1.2;
+      }
+      .content1__due-divider {
+        width: 1px;
+        align-self: stretch;
+        background: #ebf4ff;
+        flex: 0 0 1px;
+      }
+      .content1__due-right-row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .content1__due-arrow {
+        width: 16px;
+        height: 16px;
+        display: block;
+        transform: rotate(180deg);
       }
       .content1__explore {
         flex-shrink: 0;
         align-self: stretch;
         width: 100%;
+        max-width: 100%;
         min-width: 0;
         box-sizing: border-box;
+        margin-left: 0;
+        margin-right: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -683,10 +717,11 @@
       }
       .content1__explore-heading {
         flex-shrink: 0;
-        width: auto;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
-        margin-left: 16px;
-        margin-right: 16px;
+        margin-left: 0;
+        margin-right: 0;
         box-sizing: border-box;
       }
       .content1__explore-title {
@@ -704,11 +739,11 @@
         flex-shrink: 0;
         min-width: 0;
         width: 100%;
-        max-width: none;
+        max-width: 100%;
         margin-left: 0;
         margin-right: 0;
-        padding-left: 8px;
-        padding-right: 0;
+        padding-left: 0;
+        padding-right: 16px;
         box-sizing: border-box;
         overflow-x: auto;
         overflow-y: hidden;
@@ -725,7 +760,7 @@
         display: flex;
         gap: 8px;
         width: max-content;
-        margin-right: 16px;
+        margin-right: 0;
       }
       .content1__explore-card {
         position: relative;
@@ -800,12 +835,15 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
-        width: auto;
+        align-self: stretch;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
         margin-top: 8px;
-        margin-left: 16px;
-        margin-right: 16px;
+        margin-left: 0;
+        margin-right: 0;
         box-sizing: border-box;
+        overflow-x: visible;
       }
       .content1__emi-head {
         display: flex;
@@ -813,12 +851,18 @@
         justify-content: space-between;
         gap: 8px;
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        overflow-x: visible;
       }
       .content1__emi-head-left {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex: 1 1 auto;
         min-width: 0;
+        overflow: hidden;
       }
       .content1__emi-link {
         margin: 0;
@@ -837,6 +881,10 @@
         line-height: 1;
         text-decoration: none;
         white-space: nowrap;
+        flex: 0 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .content1__emi-chip {
         margin: 0;
@@ -855,12 +903,26 @@
         line-height: 1;
         text-decoration: none;
         white-space: nowrap;
+        flex: 0 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .content1__emi-view-all {
         margin-left: auto;
-        display: inline-block;
+        margin-right: 0;
+        margin-inline-start: auto;
+        margin-inline-end: 0;
+        display: inline-flex;
+        align-items: center;
+        align-self: center;
+        justify-content: flex-end;
         text-align: right;
         flex: 0 0 auto;
+        flex-shrink: 0;
+        min-width: max-content;
+        max-width: none;
+        overflow: visible;
         color: #1c3fca;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
@@ -888,7 +950,9 @@
         display: flex;
         align-items: flex-start;
         gap: 12px;
+        flex: 1 1 auto;
         min-width: 0;
+        max-width: 100%;
       }
       .content1__emi-icon-box {
         width: 40px;
@@ -921,6 +985,10 @@
         font-size: 14px;
         font-weight: 400;
         line-height: 1.4;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .content1__emi-date {
         margin: 0;
@@ -930,9 +998,14 @@
         font-size: 11px;
         font-weight: 500;
         line-height: 1.4;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .content1__emi-amount {
         margin: 0;
+        margin-left: 12px;
         color: #333333;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
@@ -940,18 +1013,22 @@
         font-weight: 700;
         line-height: 1.2;
         text-align: right;
+        flex: 0 0 auto;
       }
-      /* content2: heading + cards rail both inset 16px L/R (via section margin) */
+      /* content2: full width of content body; horizontal inset for cards via scroll padding */
       .content2 {
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
         gap: 0;
-        width: auto;
+        width: 100%;
         max-width: 100%;
         min-width: 0;
-        margin: 8px 0 16px 16px;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 0px;
+        margin-right: 0px;
         padding: 0;
         box-sizing: border-box;
         align-self: stretch;
@@ -959,19 +1036,25 @@
       }
       .content2__promo-head {
         flex-shrink: 0;
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        column-gap: 12px;
         width: 100%;
-        min-width: 0;
         max-width: 100%;
-        margin: 0;
-        padding: 0 16px 0 0;
+        min-width: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 0px;
+        margin-right: 0px;
+        padding: 0;
         box-sizing: border-box;
       }
       .content2__deals-line {
+        grid-column: 1;
         margin: 0;
+        min-width: 0;
+        text-align: left;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 12px;
@@ -982,8 +1065,11 @@
         letter-spacing: 0.02em;
       }
       .content2__view-all {
-        flex-shrink: 0;
-        flex: 0 0 auto;
+        grid-column: 2;
+        justify-self: end;
+        margin: 0;
+        display: block;
+        text-align: right;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 12px;
@@ -993,9 +1079,6 @@
         text-decoration: none;
         text-transform: uppercase;
         letter-spacing: 0.02em;
-        margin-left: auto;
-        text-align: right;
-        display: inline-block;
       }
       .content2__view-all:hover {
         text-decoration: underline;
@@ -1009,13 +1092,19 @@
         flex-shrink: 0;
         margin-top: 8px;
         min-width: 0;
-        width: calc(100% + 32px);
-        max-width: none;
-        margin-left: -16px;
-        margin-right: -16px;
-        padding: 0 16px 4px 16px;
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0px;
+        margin-right: 0px;
+        padding: 0 16px 8px 16px;
         box-sizing: border-box;
         align-self: stretch;
+        height: max-content;
+        min-height: min-content;
+        max-height: none;
+        container-type: inline-size;
+        container-name: content2-cards;
+        scroll-padding-inline: 16px;
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
@@ -1031,20 +1120,24 @@
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
-        align-items: stretch;
+        align-items: flex-start;
         gap: 12px;
         width: max-content;
         max-width: none;
         box-sizing: border-box;
+        overflow: visible;
       }
       .content2__card-img {
         display: block;
         width: 268px;
+        width: min(268px, calc(100cqi - 32px));
         height: auto;
+        max-height: none;
         flex-shrink: 0;
         border-radius: 0;
         vertical-align: top;
         user-select: none;
+        object-fit: contain;
       }
       .content3 {
         flex-shrink: 0;
@@ -1052,10 +1145,13 @@
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
-        width: auto;
-        max-width: 100%;
+        width: calc(100% - 32px);
+        max-width: calc(100% - 32px);
         min-width: 0;
-        margin: -24px 16px 16px 16px;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 16px;
+        margin-right: 16px;
         padding: 0;
         box-sizing: border-box;
         align-self: stretch;
@@ -1063,12 +1159,20 @@
       }
       .content3__heading {
         flex-shrink: 0;
-        width: 100%;
+        width: calc(100% + 32px);
+        max-width: none;
         min-width: 0;
-        margin: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: -16px;
+        margin-right: -16px;
         padding: 0;
         box-sizing: border-box;
-        line-height: 0;
+        line-height: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 12px;
       }
       .content3__title-sr {
         position: absolute;
@@ -1081,12 +1185,34 @@
         white-space: nowrap;
         border: 0;
       }
-      .content3__title-img {
+      .content3__title {
+        grid-column: 1;
+        margin: 0;
+        min-width: 0;
+        color: #949a9f;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.25;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      .content3__view-all {
+        grid-column: 2;
+        justify-self: end;
+        margin: 0;
         display: block;
-        width: 100%;
-        max-width: 328px;
-        height: auto;
-        vertical-align: top;
+        color: #1c3fca;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-decoration: none;
+        text-transform: uppercase;
+        text-align: right;
+        white-space: nowrap;
       }
       .content3__scroll {
         flex-shrink: 0;
@@ -1677,23 +1803,38 @@
               role="region"
               aria-label="Statement due and balances"
             >
-              <svg width="328" height="148" viewBox="0 0 328 148" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="328" height="71" rx="12" fill="#F3F6F9"/>
-                <rect x="223" y="21.5" width="89" height="28" rx="8" fill="#1C3FCA"/>
-                <rect x="0.5" y="79.5" width="327" height="68" rx="11.5" fill="white"/>
-                <rect x="0.5" y="79.5" width="327" height="68" rx="11.5" stroke="#E7EEF4"/>
-                <path d="M223 96H312V128H223V96Z" fill="white"/>
-                <text x="16" y="30" fill="#333333" font-size="20" font-family="Inter, system-ui, sans-serif" font-weight="600">₹46,578</text>
-                <text x="16" y="52" fill="#6B7280" font-size="12" font-family="Inter, system-ui, sans-serif">Statement due on 12 Feb 2022</text>
-                <rect x="223" y="21.5" width="89" height="28" rx="8" fill="#1C3FCA"/>
-                <text x="239" y="40" fill="white" font-size="14" font-family="Inter, system-ui, sans-serif" font-weight="600">PAY NOW</text>
-                <text x="16" y="103" fill="#333333" font-size="12" font-family="Inter, system-ui, sans-serif" font-weight="500">Total outstanding</text>
-                <text x="16" y="128" fill="#333333" font-size="16" font-family="Inter, system-ui, sans-serif" font-weight="600">₹40,000.00</text>
-                <text x="180" y="103" fill="#333333" font-size="12" font-family="Inter, system-ui, sans-serif" font-weight="500">Total unbilled</text>
-                <text x="180" y="128" fill="#333333" font-size="16" font-family="Inter, system-ui, sans-serif" font-weight="600">₹6,578.00</text>
-                <path d="M163.5 95V132" stroke="#EBF4FF"/>
-                <path d="M306.448 123.167H298.333V121.834H306.448L302.872 118.258L303.815 117.315L309 122.5L303.815 127.686L302.872 126.743L306.448 123.167Z" fill="#1C3FCA"/>
-              </svg>
+              <div class="content1__due-top">
+                <div class="content1__due-top-row">
+                  <div class="content1__due-main">
+                    <p class="content1__due-amount">₹46,578</p>
+                    <p class="content1__due-date">Statement Due on 12 Feb 2022</p>
+                  </div>
+                  <a class="content1__due-cta" href="#">PAY NOW</a>
+                </div>
+              </div>
+              <div class="content1__due-bottom">
+                <div class="content1__due-bottom-row">
+                  <div class="content1__due-col content1__due-col--left">
+                    <p class="content1__due-stat-label">TOTAL OUTSTANDING</p>
+                    <p class="content1__due-stat-value">₹0.00</p>
+                  </div>
+                  <div class="content1__due-divider" aria-hidden="true"></div>
+                  <div class="content1__due-col content1__due-col--right">
+                    <p class="content1__due-stat-label">TOTAL UNBILLED</p>
+                    <div class="content1__due-right-row">
+                      <p class="content1__due-stat-value">₹0</p>
+                      <img
+                        class="content1__due-arrow"
+                        src="assets/due-back-arrow.svg"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        draggable="false"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div
               class="content1__explore"
@@ -1878,17 +2019,10 @@
                 <h2 class="content3__title-sr" id="content3-heading">
                   Card services and online services
                 </h2>
-                <img
-                  class="content3__title-img"
-                  src="assets/content3-title-layer.svg"
-                  alt=""
-                  width="328"
-                  height="38"
-                  loading="lazy"
-                  decoding="async"
-                  draggable="false"
-                  aria-hidden="true"
-                />
+                <p class="content3__title" aria-hidden="true">
+                  Your exclusive card benefits
+                </p>
+                <a class="content3__view-all" href="#">VIEW ALL</a>
               </div>
               <div class="content3__scroll">
                 <div
