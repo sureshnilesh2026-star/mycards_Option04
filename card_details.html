@@ -493,6 +493,8 @@
         min-width: 0;
         width: 100%;
         margin: 0;
+        padding: 0;
+        padding-inline: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -517,14 +519,15 @@
         min-height: 0;
         min-width: 0;
         width: 100%;
+        max-width: none;
+        margin: 0;
+        margin-inline: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
         gap: 32px;
-        padding-top: 20px;
-        padding-left: 0;
-        padding-right: 0;
-        padding-bottom: 24px;
+        padding: 20px 0 24px 0;
+        padding-inline: 0;
         box-sizing: border-box;
         overflow-x: visible;
         overflow-y: visible;
@@ -1018,24 +1021,23 @@
         text-align: right;
         flex: 0 0 auto;
       }
-      /* content2: span full content__body width; deals rail flush L/R */
+      /* content2: deals scroll = width breakout + 16px padding-inline (matches devtools layout) */
       .content2 {
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
         gap: 0;
-        width: 100%;
-        max-width: none;
-        inline-size: 100%;
-        min-width: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-        margin-left: 0px;
-        margin-right: 0px;
-        padding: 0;
-        box-sizing: border-box;
         align-self: stretch;
+        width: auto;
+        max-width: none;
+        inline-size: auto;
+        min-width: 0;
+        margin: 0;
+        margin-inline: 0;
+        padding: 0;
+        padding-inline: 0;
+        box-sizing: border-box;
         overflow: visible;
       }
       .content2__promo-head {
@@ -1044,8 +1046,9 @@
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         column-gap: 12px;
-        width: 100%;
-        max-width: 100%;
+        align-self: stretch;
+        width: auto;
+        max-width: none;
         min-width: 0;
         margin-top: 0;
         margin-bottom: 0;
@@ -1094,16 +1097,15 @@
       }
       .content2__cards-scroll {
         flex-shrink: 0;
-        margin-top: 8px;
         min-width: 0;
-        width: 100%;
-        max-width: none;
-        inline-size: 100%;
-        margin-left: 0px;
-        margin-right: 0px;
-        padding: 0 0 8px 0;
-        box-sizing: border-box;
         align-self: stretch;
+        width: calc(100% + 32px);
+        max-width: none;
+        inline-size: auto;
+        margin: 8px -16px 0;
+        padding: 0 0 8px 0;
+        padding-inline: 16px;
+        box-sizing: border-box;
         height: max-content;
         min-height: min-content;
         max-height: none;
@@ -1135,7 +1137,7 @@
       .content2__card-img {
         display: block;
         width: 268px;
-        width: min(268px, 100cqi);
+        width: min(268px, calc(100cqi - 32px));
         height: auto;
         max-height: none;
         flex-shrink: 0;
@@ -1144,14 +1146,34 @@
         user-select: none;
         object-fit: contain;
       }
-      .content3 {
+      /* content2 duplicate: separate namespace for independent styling */
+      .content2b {
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 8px;
-        width: 100%;
-        max-width: 100%;
+        gap: 0;
+        align-self: stretch;
+        width: auto;
+        max-width: none;
+        inline-size: auto;
+        min-width: 0;
+        margin: 0;
+        margin-inline: 0;
+        padding: 0;
+        padding-inline: 0;
+        box-sizing: border-box;
+        overflow: visible;
+      }
+      .content2b__promo-head {
+        flex-shrink: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 12px;
+        align-self: stretch;
+        width: auto;
+        max-width: none;
         min-width: 0;
         margin-top: 0;
         margin-bottom: 0;
@@ -1159,77 +1181,62 @@
         margin-right: 0px;
         padding: 0;
         box-sizing: border-box;
-        align-self: stretch;
-        overflow-x: hidden;
-        overflow-y: visible;
       }
-      .content3__heading {
-        flex-shrink: 0;
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-        margin-left: 0;
-        margin-right: 0;
-        padding: 0;
-        box-sizing: border-box;
-        line-height: 1;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        column-gap: 12px;
-      }
-      .content3__title-sr {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-      .content3__title {
+      .content2b__deals-line {
         grid-column: 1;
         margin: 0;
         min-width: 0;
-        color: #949a9f;
+        text-align: left;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 12px;
         font-weight: 600;
         line-height: 1.25;
+        color: #949a9f;
         text-transform: uppercase;
         letter-spacing: 0.02em;
       }
-      .content3__view-all {
+      .content2b__view-all {
         grid-column: 2;
         justify-self: end;
         margin: 0;
         display: block;
-        color: #1c3fca;
+        text-align: right;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 12px;
         font-weight: 700;
         line-height: 1.25;
+        color: #1C3FCA;
         text-decoration: none;
         text-transform: uppercase;
-        text-align: right;
-        white-space: nowrap;
+        letter-spacing: 0.02em;
       }
-      .content3__scroll {
+      .content2b__view-all:hover {
+        text-decoration: underline;
+      }
+      .content2b__view-all:focus-visible {
+        outline: 2px solid #1C3FCA;
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+      .content2b__cards-scroll {
         flex-shrink: 0;
         min-width: 0;
-        width: 100%;
-        max-width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        padding: 0;
+        align-self: stretch;
+        width: calc(100% + 32px);
+        max-width: none;
+        inline-size: auto;
+        margin: 8px -16px 0;
+        padding: 0 0 8px 0;
+        padding-inline: 16px;
         box-sizing: border-box;
-        height: 327px;
+        height: max-content;
+        min-height: min-content;
+        max-height: none;
+        container-type: inline-size;
+        container-name: content2b-cards;
+        scroll-padding-inline: 0;
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
@@ -1238,46 +1245,136 @@
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
-      .content3__scroll::-webkit-scrollbar {
+      .content2b__cards-scroll::-webkit-scrollbar {
         display: none;
       }
-      .content3__rail {
+      .content2b__cards-crop {
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
-        align-items: stretch;
+        align-items: flex-start;
         gap: 16px;
         width: max-content;
-        height: 327px;
-        box-sizing: border-box;
-      }
-      .content3__card-slice {
-        flex: 0 0 200px;
-        width: 200px;
-        height: 327px;
-        overflow: hidden;
-        box-sizing: border-box;
-        border-radius: 12px;
-        border: 1px solid rgba(236, 237, 243, 1);
-      }
-      .content3__slice-img {
-        display: block;
-        width: 848px;
-        height: 365px;
         max-width: none;
-        margin: -38px 0 0 0;
+        box-sizing: border-box;
+        overflow: visible;
+      }
+      .content2b__benefit-card {
+        position: relative;
+        width: 200px;
+        min-height: 327px;
+        padding: 20px 16px;
+        border-radius: 12px;
+        border: 1px solid #ecedf3;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 24px;
         flex-shrink: 0;
-        vertical-align: top;
+        box-sizing: border-box;
+      }
+      .content2b__benefit-top {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .content2b__benefit-date {
+        width: 100%;
+        margin: 0;
+        color: #5bbc65;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+      .content2b__benefit-icon-wrap {
+        width: 96px;
+        height: 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .content2b__benefit-icon {
+        display: block;
+        width: 96px;
+        height: 96px;
+        object-fit: contain;
         user-select: none;
       }
-      .content3__card-slice--1 .content3__slice-img {
-        margin-left: -216px;
+      .content2b__benefit-copy {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
       }
-      .content3__card-slice--2 .content3__slice-img {
-        margin-left: -432px;
+      .content2b__benefit-title {
+        width: 114px;
+        margin: 0;
+        color: #333333;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.25;
       }
-      .content3__card-slice--3 .content3__slice-img {
-        margin-left: -648px;
+      .content2b__benefit-desc {
+        width: 100%;
+        margin: 0;
+        color: #444444;
+        opacity: 0.7;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.25;
+      }
+      .content2b__benefit-meta {
+        width: 100%;
+        min-height: 32px;
+        border-radius: 12px;
+        background: #ebf4ff;
+        padding: 8px 12px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .content2b__benefit-meta-label {
+        margin: 0;
+        color: #333333;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+      .content2b__benefit-meta-value {
+        margin: 0;
+        color: #333333;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .content2b__benefit-meta-value--regular {
+        font-weight: 400;
+      }
+      .content2b__benefit-chevron {
+        width: 16px;
+        height: 16px;
+        display: block;
+        transform: rotate(180deg);
       }
       /*
        * Bottom nav — full frame width, fixed 78px height; artwork scales in slot (mycards-bottombar.svg).
@@ -2017,73 +2114,82 @@
               </div>
             </div>
             <div
-              class="content3"
+              class="content2b"
               role="region"
-              aria-labelledby="content3-heading"
+              aria-labelledby="content2b-heading"
             >
-              <div class="content3__heading">
-                <h2 class="content3__title-sr" id="content3-heading">
-                  Card services and online services
+              <div class="content2b__promo-head">
+                <h2 class="content2b__deals-line" id="content2b-heading">
+                  YOUR EXCLUSIVE Card BENEFITS
                 </h2>
-                <p class="content3__title" aria-hidden="true">
-                  Your exclusive card benefits
-                </p>
-                <a class="content3__view-all" href="#">VIEW ALL</a>
+                <a class="content2b__view-all" href="#">View all</a>
               </div>
-              <div class="content3__scroll">
-                <div
-                  class="content3__rail"
-                  role="list"
-                  aria-label="Card benefits and services"
-                >
-                  <div class="content3__card-slice content3__card-slice--0" role="listitem">
-                    <img
-                      class="content3__slice-img"
-                      src="assets/content3-design.svg"
-                      alt=""
-                      width="848"
-                      height="365"
-                      loading="lazy"
-                      decoding="async"
-                      draggable="false"
-                    />
-                  </div>
-                  <div class="content3__card-slice content3__card-slice--1" role="listitem">
-                    <img
-                      class="content3__slice-img"
-                      src="assets/content3-design.svg"
-                      alt=""
-                      width="848"
-                      height="365"
-                      loading="lazy"
-                      decoding="async"
-                      draggable="false"
-                    />
-                  </div>
-                  <div class="content3__card-slice content3__card-slice--2" role="listitem">
-                    <img
-                      class="content3__slice-img"
-                      src="assets/content3-design.svg"
-                      alt=""
-                      width="848"
-                      height="365"
-                      loading="lazy"
-                      decoding="async"
-                      draggable="false"
-                    />
-                  </div>
-                  <div class="content3__card-slice content3__card-slice--3" role="listitem">
-                    <img
-                      class="content3__slice-img"
-                      src="assets/content3-design.svg"
-                      alt=""
-                      width="848"
-                      height="365"
-                      loading="lazy"
-                      decoding="async"
-                      draggable="false"
-                    />
-                  </div>
+              <div class="content2b__cards-scroll">
+                <div class="content2b__cards-crop">
+                  <article class="content2b__benefit-card">
+                    <div class="content2b__benefit-top">
+                      <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
+                      <div class="content2b__benefit-icon-wrap">
+                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/df39bd77979bd22fb766c707cd8d731d0b2fb888.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                      </div>
+                      <div class="content2b__benefit-copy">
+                        <p class="content2b__benefit-title">Membership Rewards Points</p>
+                        <p class="content2b__benefit-desc">Get 15000 Bonus Membership Rewards points</p>
+                      </div>
+                    </div>
+                    <div class="content2b__benefit-meta">
+                      <p class="content2b__benefit-meta-label">₹55k Spent</p>
+                      <p class="content2b__benefit-meta-value">₹1.90L</p>
+                    </div>
+                  </article>
+                  <article class="content2b__benefit-card">
+                    <div class="content2b__benefit-top">
+                      <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
+                      <div class="content2b__benefit-icon-wrap">
+                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/b83ab57af6e7d292cdc64804c93255e0719ded76.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                      </div>
+                      <div class="content2b__benefit-copy">
+                        <p class="content2b__benefit-title">Complementary Lounge Visits</p>
+                        <p class="content2b__benefit-desc">2 complementary visits to domestic lounge per quarter</p>
+                      </div>
+                    </div>
+                    <div class="content2b__benefit-meta">
+                      <p class="content2b__benefit-meta-label">Availed</p>
+                      <p class="content2b__benefit-meta-value">1<span class="content2b__benefit-meta-value--regular">/2</span></p>
+                    </div>
+                  </article>
+                  <article class="content2b__benefit-card">
+                    <div class="content2b__benefit-top">
+                      <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
+                      <div class="content2b__benefit-icon-wrap">
+                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/50b7fb6376adbe0f0ceb64e81642fc72fc4fa8cf.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                      </div>
+                      <div class="content2b__benefit-copy">
+                        <p class="content2b__benefit-title">Pass to VIP Air Lounge</p>
+                        <p class="content2b__benefit-desc">Access to 1200+ VIP Air lounges with a priority pass membership</p>
+                      </div>
+                    </div>
+                    <div class="content2b__benefit-meta">
+                      <p class="content2b__benefit-meta-label">Claimed</p>
+                      <img class="content2b__benefit-chevron" src="assets/due-back-arrow.svg" alt="" loading="lazy" decoding="async" draggable="false" />
+                    </div>
+                  </article>
+                  <article class="content2b__benefit-card">
+                    <div class="content2b__benefit-top">
+                      <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
+                      <div class="content2b__benefit-icon-wrap">
+                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/c28b82d5e71b5dd150edcb3c7d5cb5c3ece9e450.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                      </div>
+                      <div class="content2b__benefit-copy">
+                        <p class="content2b__benefit-title">Reward Points + Taj Voucher</p>
+                        <p class="content2b__benefit-desc">Get 25000 Bonus Membership Rewards points and Taj voucher</p>
+                      </div>
+                    </div>
+                    <div class="content2b__benefit-meta">
+                      <p class="content2b__benefit-meta-label">₹55k Spent</p>
+                      <p class="content2b__benefit-meta-value">₹1.90L</p>
+                    </div>
+                  </article>
                 </div>
               </div>
             </div>
