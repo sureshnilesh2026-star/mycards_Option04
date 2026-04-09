@@ -608,6 +608,11 @@
           btnOtp.setAttribute("aria-busy", "true");
           otpLabel.classList.add("hidden");
           otpSpinner.classList.remove("hidden");
+
+          // Open OTP sheet immediately in the same tap gesture so keyboard can
+          // appear from the start of the sheet slide-in animation on mobile.
+          openOtp(v.slice(-4));
+
           setTimeout(function () {
             otpSpinner.classList.add("hidden");
             otpLabel.classList.remove("hidden");
@@ -615,9 +620,6 @@
             btnOtp.disabled = false;
             btnOtp.setAttribute("aria-busy", "false");
             getOtpFlowActive = false;
-
-            // Open OTP overlay from bottom of the same page
-            openOtp(v.slice(-4));
           }, 1500);
         }
 
