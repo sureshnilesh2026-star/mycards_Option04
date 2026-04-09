@@ -4,10 +4,8 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=overlays-content"
     />
-    <!-- Matches .frame-root gradient top (#080326) for mobile browser chrome / status tint -->
-    <meta name="theme-color" content="#080326" />
     <title>MyCards — ETB First Time</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -28,9 +26,9 @@
               sheet: "0 -8px 24px rgba(0, 0, 0, 0.08)",
             },
             spacing: {
-              /* frame: header (hug) + hero (fill) + login sheet (hug content); OTP overlay still uses h-sheet */
+              /* frame: header (hug) + hero (fill) + login + OTP sheets (fixed h-sheet) */
               header: "48px",
-              sheet: "310px",
+              sheet: "320px",
             },
           },
         },
@@ -153,48 +151,17 @@
         color: transparent;
         -webkit-text-fill-color: transparent;
       }
-      /* Sheet slide-in uses transform/opacity only; keyboard lift uses bottom + max-height via JS */
+      /* Login + OTP sheets: hide scrollbars if any nested overflow appears */
+      #login-sheet,
       #otp-sheet {
-        display: flex;
-        flex-direction: column;
-        height: 310px;
-        min-height: 310px;
-        max-height: 310px;
-        transition:
-          transform 300ms cubic-bezier(0, 0, 0.2, 1),
-          opacity 300ms cubic-bezier(0, 0, 0.2, 1),
-          bottom 320ms cubic-bezier(0.25, 0.1, 0.25, 1);
-      }
-      #otp-sheet .otp-sheet__scroll {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: hidden;
-      }
-      #login-sheet {
-        height: 310px;
-        flex: none;
-        transition:
-          transform 280ms cubic-bezier(0, 0, 0.2, 1),
-          opacity 280ms ease;
-      }
-      #login-sheet .login-sheet__inner {
-        height: 100%;
-        min-height: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
-      #login-sheet .login-sheet__inner::-webkit-scrollbar {
+      #login-sheet::-webkit-scrollbar,
+      #otp-sheet::-webkit-scrollbar {
         display: none;
         width: 0;
         height: 0;
-      }
-      .frame-root--otp-open #login-sheet {
-        transform: translateY(108%);
-        opacity: 0;
-        pointer-events: none;
       }
     </style>
   </head>
@@ -209,7 +176,7 @@
         L0  Top bar (Figma SVG assets/menu-header.svg + #btn-eva / #btn-menu overlays)
         L1  Hero block (flex-1 min-h-0, fill)
               L0  Marketing art: assets/etb-hero-marketing.svg (z-10, absolute)
-        L2  Bottom sheet (height from content, flex-none, aligned to frame bottom)
+        L2  Bottom sheet (fixed h-sheet 320px, flex-none, aligned to frame bottom)
               • Title, input, helper, #input-hint
               • #btn-otp + spinner
               • Footer copy + nav links
@@ -257,14 +224,14 @@
       <!-- Bottom sheet: interactive layer (matches Figma spacing; graphics above are unchanged) -->
       <div
         id="login-sheet"
-        class="flex flex-col flex-none shrink-0 bg-white rounded-t-[24px] shadow-sheet relative z-20 overflow-hidden px-6 pt-0 pb-0"
+        class="flex flex-col flex-none h-sheet min-h-0 shrink-0 bg-white rounded-t-[24px] shadow-sheet relative z-20 overflow-hidden px-6 pt-0 pb-0"
       >
         <!-- Login Details top border (4px gradient) -->
         <div
           aria-hidden="true"
           class="absolute left-0 right-0 top-0 h-[4px] bg-[linear-gradient(90deg,#FFB6BA_0%,#1C3FCA_50%,#FFB1B6_100%)] z-[1]"
         ></div>
-        <div class="login-sheet__inner relative z-10 flex flex-col pt-6 pb-[30px]">
+        <div class="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden pt-6 pb-[30px]">
           <h2 class="text-[17px] font-bold text-neutral-900 leading-tight mb-2">Let’s Get Started</h2>
 
           <div class="mobile-field block">
@@ -323,15 +290,15 @@
         </div>
       </div>
 
-      <!-- OTP layer: fixed to viewport bottom so it aligns with the page (not offset by inner frame) -->
+      <!-- OTP layer: bottom sheet — flush to frame bottom (height matches login sheet token) -->
       <div
         id="otp-backdrop"
-        class="fixed inset-0 bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 ease-out z-[90]"
+        class="absolute inset-0 bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 ease-out z-[45]"
         aria-hidden="true"
       ></div>
       <div
         id="otp-sheet"
-        class="fixed left-0 right-0 bottom-0 w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform duration-300 ease-out transition-opacity z-[100]"
+        class="absolute left-0 right-0 bottom-0 h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform duration-300 ease-out transition-opacity z-[50]"
         role="dialog"
         aria-modal="true"
         aria-label="Enter OTP"
@@ -339,12 +306,10 @@
         <!-- OTP top gradient edge (4px) -->
         <div
           aria-hidden="true"
-          class="absolute left-0 right-0 top-0 z-[2] h-[4px] bg-[linear-gradient(90deg,#FFB6BA_0%,#1C3FCA_50%,#FFB1B6_100%)] pointer-events-none"
+          class="absolute left-0 right-0 top-0 h-[4px] bg-[linear-gradient(90deg,#FFB6BA_0%,#1C3FCA_50%,#FFB1B6_100%)]"
         ></div>
 
-        <div
-          class="otp-sheet__scroll pt-6 px-[32px] pb-4 flex flex-col items-center gap-[18px] relative min-h-0"
-        >
+        <div class="pt-6 px-[32px] h-full min-h-0 flex flex-col items-center gap-[24px] relative">
           <div class="w-[312px] text-center shrink-0">
             <p class="font-semibold text-[#222] text-[18px] leading-[1.4]">Enter OTP</p>
             <p class="mt-[12px] text-[#444] font-normal text-[14px] leading-[1.4]">
@@ -378,12 +343,10 @@
             <!-- Real input (tap to focus; digits captured in JS) -->
             <input
               id="otp-raw"
-              type="text"
               inputmode="numeric"
               autocomplete="one-time-code"
               pattern="[0-9]*"
               maxlength="6"
-              enterkeyhint="done"
               class="absolute inset-0 opacity-0"
               aria-label="OTP code"
             />
@@ -403,10 +366,13 @@
           <button
             type="button"
             id="otp-verify"
-            class="w-full shrink-0 bg-[#1C3FCA] text-white rounded-[11px] py-[12px] text-[16px] font-semibold shadow-sm"
+            disabled
+            class="w-full shrink-0 rounded-[11px] bg-[#1C3FCA] py-[12px] text-[16px] font-semibold text-white shadow-sm transition-opacity disabled:pointer-events-none disabled:opacity-50"
           >
             Verify OTP
           </button>
+
+          <div class="flex-1 min-h-0"></div>
         </div>
       </div>
     </div>
@@ -427,20 +393,31 @@
         var otpVerifyBtn = document.getElementById("otp-verify");
         var otpResend = document.getElementById("otp-resend");
 
+        function otpDigits() {
+          return otpRaw.value.replace(/\D/g, "");
+        }
+
         function syncOtpDots() {
           var dots = document.querySelectorAll("#otp-code-field .otp-dot");
-          var n = otpRaw.value.replace(/\D/g, "").length;
+          var n = otpDigits().length;
           for (var i = 0; i < dots.length; i++) {
             dots[i].classList.toggle("otp-dot--filled", i < n);
           }
         }
 
+        function syncOtpVerifyButton() {
+          var complete = otpDigits().length === 6;
+          otpVerifyBtn.disabled = !complete;
+        }
+
         otpRaw.addEventListener("input", function () {
           this.value = this.value.replace(/\D/g, "").slice(0, 6);
           syncOtpDots();
+          syncOtpVerifyButton();
         });
 
         syncOtpDots();
+        syncOtpVerifyButton();
 
         function showToast(msg) {
           var t = document.getElementById("toast");
@@ -465,6 +442,7 @@
         var otpLabel = document.getElementById("otp-label");
         var otpSpinner = document.getElementById("otp-spinner");
         var frameRoot = document.querySelector(".frame-root");
+        var isMobileInputFocused = false;
 
         var defaultInfoText = "You’ll receive an OTP on this number";
 
@@ -491,141 +469,52 @@
           frameRoot.style.transition = "";
         }
 
-        function getVisualViewportBottom() {
+        function updateKeyboardShift() {
+          if (!isMobileInputFocused || !frameRoot) return;
           var vv = window.visualViewport;
-          if (!vv) return window.innerHeight;
-          return vv.offsetTop + vv.height;
+          var viewportHeight = vv ? vv.height : window.innerHeight;
+          var ctaRect = btnOtp.getBoundingClientRect();
+          var safeBottom = viewportHeight - 12;
+          var overlap = Math.max(0, ctaRect.bottom - safeBottom);
+          var shiftY = Math.min(overlap, 260);
+          frameRoot.style.transition = "transform 180ms ease";
+          frameRoot.style.transform = shiftY > 0 ? "translateY(-" + Math.round(shiftY) + "px)" : "";
+          window.scrollTo(0, 0);
         }
 
-        /** 0 = sheet bottom flush with keyboard (matches reference); only lift if CTA would be covered */
-        var OTP_GAP_ABOVE_KB = 0;
-        /** False until bottom-sheet slide-in ends — keeps keyboard overlap during slide, then lifts */
-        var otpSheetSlideReady = false;
-        var otpInsetDebounceTimer = null;
-        var lastOtpBottomPx = null;
-
-        function getVisualKeyboardInset() {
-          var vv = window.visualViewport;
-          if (!vv) return 0;
-          return Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-        }
-
-        function clearOtpInsetDebounce() {
-          if (otpInsetDebounceTimer !== null) {
-            clearTimeout(otpInsetDebounceTimer);
-            otpInsetDebounceTimer = null;
-          }
-        }
-
-        function queueOtpKeyboardInset() {
-          if (!otpSheet || !otpRaw) return;
-          clearOtpInsetDebounce();
-          otpInsetDebounceTimer = setTimeout(function () {
-            otpInsetDebounceTimer = null;
-            applyOtpKeyboardInset();
-          }, 160);
-        }
-
-        function applyOtpKeyboardInset() {
-          if (!otpSheet || !otpRaw || !otpVerifyBtn) return;
-          if (!otpSheetSlideReady) return;
-          var inset = getVisualKeyboardInset();
-          var otpFocused = document.activeElement === otpRaw;
-          var sheetOpen = otpSheet.classList.contains("translate-y-0");
-          if (otpFocused && sheetOpen) {
-            var visibleBottom = getVisualViewportBottom();
-            var verifyRect = otpVerifyBtn.getBoundingClientRect();
-            var liftForVerify = Math.max(
-              0,
-              Math.round(verifyRect.bottom - visibleBottom + OTP_GAP_ABOVE_KB)
-            );
-            var fromInset = inset > 24 ? Math.round(inset + OTP_GAP_ABOVE_KB) : 0;
-            var next = Math.max(fromInset, liftForVerify, 0);
-            if (next < 8) {
-              lastOtpBottomPx = null;
-              otpSheet.style.bottom = "";
-              return;
-            }
-            otpSheet.style.bottom = next + "px";
-            lastOtpBottomPx = next;
-            return;
-          }
-          lastOtpBottomPx = null;
-          otpSheet.style.bottom = "";
-        }
+        mobile.addEventListener("focus", function () {
+          isMobileInputFocused = true;
+          setTimeout(updateKeyboardShift, 50);
+        });
 
         mobile.addEventListener("blur", function () {
+          isMobileInputFocused = false;
           resetKeyboardShift();
         });
 
         if (window.visualViewport) {
-          window.visualViewport.addEventListener("resize", function () {
-            queueOtpKeyboardInset();
-          });
-        }
-
-        otpRaw.addEventListener("focus", function () {
-          queueOtpKeyboardInset();
-        });
-
-        otpRaw.addEventListener("blur", function () {
-          clearOtpInsetDebounce();
-          lastOtpBottomPx = null;
-          otpSheet.style.bottom = "";
-        });
-
-        function scheduleOtpLiftAfterSlide() {
-          var done = false;
-          function run() {
-            if (done) return;
-            done = true;
-            otpSheetSlideReady = true;
-            queueOtpKeyboardInset();
-          }
-          function onTransitionEnd(e) {
-            if (e.target !== otpSheet || e.propertyName !== "transform") return;
-            otpSheet.removeEventListener("transitionend", onTransitionEnd);
-            run();
-          }
-          otpSheet.addEventListener("transitionend", onTransitionEnd);
-          setTimeout(run, 360);
+          window.visualViewport.addEventListener("resize", updateKeyboardShift);
+          window.visualViewport.addEventListener("scroll", updateKeyboardShift);
         }
 
         function openOtp(last4) {
-          otpSheetSlideReady = false;
           otpLast4.textContent = last4;
           otpRaw.value = "";
           otpRaw.dispatchEvent(new Event("input"));
           syncOtpDots();
+          syncOtpVerifyButton();
 
-          mobile.blur();
-          resetKeyboardShift();
-          if (frameRoot) frameRoot.classList.add("frame-root--otp-open");
-
-          clearOtpInsetDebounce();
-          lastOtpBottomPx = null;
-          otpSheet.style.bottom = "";
           otpSheet.classList.remove("translate-y-full", "opacity-0", "pointer-events-none");
           otpSheet.classList.add("translate-y-0", "opacity-100", "pointer-events-auto");
           otpBackdrop.classList.remove("opacity-0", "pointer-events-none");
           otpBackdrop.classList.add("opacity-100", "pointer-events-auto");
 
-          /* Must run in the same user-gesture turn as the tap (no setTimeout) so iOS/iPadOS opens the keyboard */
-          otpRaw.focus({ preventScroll: true });
-          requestAnimationFrame(function () {
-            otpRaw.focus({ preventScroll: true });
-          });
-          /* During slide-in, keep bottom:0 so keyboard can overlap; lift after sheet settles */
-          scheduleOtpLiftAfterSlide();
+          setTimeout(function () {
+            otpRaw.focus();
+          }, 100);
         }
 
         function closeOtp() {
-          otpSheetSlideReady = false;
-          clearOtpInsetDebounce();
-          lastOtpBottomPx = null;
-          if (frameRoot) frameRoot.classList.remove("frame-root--otp-open");
-          otpRaw.blur();
-          otpSheet.style.bottom = "";
           otpSheet.classList.add("translate-y-full", "opacity-0", "pointer-events-none");
           otpSheet.classList.remove("translate-y-0", "opacity-100", "pointer-events-auto");
           otpBackdrop.classList.add("opacity-0", "pointer-events-none");
@@ -651,8 +540,10 @@
         });
 
         otpVerifyBtn.addEventListener("click", function () {
-          showToast("OTP verified");
-          // Keep OTP sheet visible and interactive until navigation (no closeOtp / no pointer-events strip)
+          if (otpDigits().length !== 6) {
+            showToast("Enter the 6-digit OTP");
+            return;
+          }
           window.location.href = "verify.html";
         });
 
@@ -670,16 +561,15 @@
           btnOtp.setAttribute("aria-busy", "true");
           otpLabel.classList.add("hidden");
           otpSpinner.classList.remove("hidden");
-
-          /* Open sheet + focus in this same tap turn so mobile Safari/iPadOS shows the keyboard */
-          openOtp(v.slice(-4));
-
           setTimeout(function () {
             otpSpinner.classList.add("hidden");
             otpLabel.classList.remove("hidden");
             otpLabel.textContent = "Get OTP";
             btnOtp.disabled = false;
             btnOtp.setAttribute("aria-busy", "false");
+
+            // Open OTP overlay from bottom of the same page
+            openOtp(v.slice(-4));
           }, 1500);
         });
       })();
