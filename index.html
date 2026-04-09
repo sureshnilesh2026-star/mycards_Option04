@@ -476,12 +476,14 @@
           var targetRect = isOtpInputFocused
             ? otpVerifyBtn.getBoundingClientRect()
             : btnOtp.getBoundingClientRect();
-          // Keep sheets slightly lower while keyboard is open (visible overlap).
-          var bottomReserve = 32;
+          // OTP mode keeps CTA closer to keyboard (slight overlap), login stays a bit higher.
+          var bottomReserve = isOtpInputFocused ? 4 : 32;
           var safeBottom = viewportBottom - bottomReserve;
           var overlap = Math.max(0, targetRect.bottom - safeBottom);
           var shiftY = Math.min(overlap, 420);
-          frameRoot.style.transition = "transform 180ms ease";
+          frameRoot.style.transition = isOtpInputFocused
+            ? "transform 300ms ease-out"
+            : "transform 180ms ease";
           frameRoot.style.transform = shiftY > 0 ? "translateY(-" + Math.round(shiftY) + "px)" : "";
           window.scrollTo(0, 0);
         }
