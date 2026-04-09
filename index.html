@@ -486,7 +486,10 @@
         }
 
         var OTP_ABOVE_KEYBOARD = 72;
+        /** Extra offset above keyboard / accessory bar so “Verify OTP” is fully visible */
         var OTP_BOTTOM_EXTRA_PX = 80;
+        /** Additional gap between CTA and top of keyboard (requested +80px breathing room) */
+        var OTP_CTA_PAD_PX = 100;
         /** False until bottom-sheet slide-in ends — keeps keyboard overlap during slide, then lifts */
         var otpSheetSlideReady = false;
         var otpInsetDebounceTimer = null;
@@ -523,8 +526,8 @@
           if (otpFocused && sheetOpen) {
             var visibleBottom = getVisualViewportBottom();
             var verifyRect = otpVerifyBtn.getBoundingClientRect();
-            var pad = 20;
-            var liftForVerify = verifyRect.bottom - visibleBottom + pad;
+            var liftForVerify =
+              verifyRect.bottom - visibleBottom + OTP_CTA_PAD_PX;
             var fromInset =
               inset > 48 ? Math.round(inset + OTP_ABOVE_KEYBOARD) : 0;
             var base = Math.max(fromInset, Math.round(liftForVerify));
