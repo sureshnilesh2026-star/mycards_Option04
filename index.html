@@ -308,7 +308,7 @@
           class="absolute left-0 right-0 top-0 h-[4px] bg-[linear-gradient(90deg,#FFB6BA_0%,#1C3FCA_50%,#FFB1B6_100%)]"
         ></div>
 
-        <div class="pt-6 px-[32px] h-full min-h-0 flex flex-col items-center gap-[24px] relative">
+        <div class="pt-6 px-6 h-full min-h-0 flex flex-col items-center gap-[24px] relative">
           <div class="w-[312px] text-center shrink-0">
             <p class="font-semibold text-[#222] text-[18px] leading-[1.4]">Enter OTP</p>
             <p class="mt-[12px] text-[#444] font-normal text-[14px] leading-[1.4]">
@@ -327,7 +327,7 @@
 
           <div
             id="otp-code-field"
-            class="relative w-[320px] h-[48px] shrink-0 bg-white border border-[#9ca3af] rounded-[8px] flex items-center justify-center overflow-hidden"
+            class="relative w-full h-[48px] shrink-0 bg-white border border-[#9ca3af] rounded-[8px] flex items-center justify-center overflow-hidden"
           >
             <!-- Dots (visual) -->
             <div class="w-full px-[16px] flex items-center justify-between">
@@ -496,6 +496,20 @@
           window.visualViewport.addEventListener("scroll", updateKeyboardShift);
         }
 
+        function focusOtpFieldForKeyboard() {
+          try {
+            otpRaw.focus({ preventScroll: true });
+          } catch (_) {
+            otpRaw.focus();
+          }
+          // Some mobile browsers require a synthetic click before showing keyboard.
+          otpRaw.click();
+          var len = otpRaw.value.length;
+          if (typeof otpRaw.setSelectionRange === "function") {
+            otpRaw.setSelectionRange(len, len);
+          }
+        }
+
         function openOtp(last4) {
           otpLast4.textContent = last4;
           otpRaw.value = "";
@@ -508,16 +522,14 @@
           otpBackdrop.classList.remove("opacity-0", "pointer-events-none");
           otpBackdrop.classList.add("opacity-100", "pointer-events-auto");
 
-          // Start keyboard open with sheet slide-in (instead of after it).
-          requestAnimationFrame(function () {
-            otpRaw.focus({ preventScroll: true });
-            // Fallback for browsers that ignore early focus during transition.
-            setTimeout(function () {
-              if (document.activeElement !== otpRaw) {
-                otpRaw.focus({ preventScroll: true });
-              }
-            }, 80);
-          });
+          // Start keyboard open with sheet slide-in (instead of waiting for a tap).
+          focusOtpFieldForKeyboard();
+          requestAnimationFrame(focusOtpFieldForKeyboard);
+          setTimeout(function () {
+            if (document.activeElement !== otpRaw) {
+              focusOtpFieldForKeyboard();
+            }
+          }, 120);
         }
 
         function closeOtp() {
@@ -575,11 +587,6 @@
           btnOtp.setAttribute("aria-busy", "true");
           otpLabel.classList.add("hidden");
           otpSpinner.classList.remove("hidden");
-
-          // Open OTP sheet immediately from the user gesture so keyboard can
-          // appear while the sheet is sliding in.
-          openOtp(v.slice(-4));
-
           setTimeout(function () {
             otpSpinner.classList.add("hidden");
             otpLabel.classList.remove("hidden");
@@ -587,6 +594,9 @@
             btnOtp.disabled = false;
             btnOtp.setAttribute("aria-busy", "false");
             getOtpFlowActive = false;
+
+            // Open OTP overlay from bottom of the same page
+            openOtp(v.slice(-4));
           }, 1500);
         }
 
