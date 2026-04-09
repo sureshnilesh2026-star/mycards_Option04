@@ -97,49 +97,73 @@
         pointer-events: auto;
         cursor: pointer;
       }
-      /* Last-4 digits: text only inside the card art’s printed box (no extra chip — avoids double-outline) */
+      /* Card-number overlay aligned to Figma: 3x dot groups + right-side last-4 chip */
       .card-oncard-digits {
         position: absolute;
-        left: 62.5%;
+        left: 28px;
         top: 53%;
         right: auto;
         bottom: auto;
-        /* +64px right, +24px down from centered anchor */
-        transform: translate(calc(-50% + 64px), calc(-50% + 24px));
+        /* Left anchored from card edge; only keep Y offset */
+        transform: translateY(24px);
         box-sizing: border-box;
         min-width: 0;
         width: max-content;
         max-width: none;
         padding: 0;
         margin: 0;
-        border: none;
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
+        gap: 17px;
         pointer-events: none;
         z-index: 3;
         opacity: 1;
         transition: opacity 200ms ease;
       }
       .card-oncard-digits--empty {
-        opacity: 0;
+        opacity: 1;
+      }
+      .card-oncard-digits__dot-groups {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+      }
+      .card-oncard-digits__group {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .card-oncard-digits__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.95);
+      }
+      .card-oncard-digits__last4 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        min-height: 30px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: rgba(0, 0, 0, 0.4);
+        padding: 6px 8px;
       }
       .card-oncard-digits__text {
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 3px;
+        font-size: 18px;
+        font-weight: 400;
+        letter-spacing: 2px;
         color: #fff;
         line-height: 1;
         font-variant-numeric: tabular-nums;
         text-shadow: none;
       }
-      /* Floating #digit-display is the only digits layer while typing — hide on-card copy to avoid double text */
+      /* Keep on-card overlay visible through all animation steps */
       .frame-root.verify-float-digits-active .card-oncard-digits {
-        opacity: 0 !important;
-        visibility: hidden;
+        opacity: 1 !important;
+        visibility: visible;
       }
       #digit-display {
         text-shadow: none;
@@ -155,34 +179,50 @@
       #card-select-text.card-select-text--above-stack {
         transform: translateX(-50%) translateY(-100%);
       }
-      #choose-another-card {
+      /* “Select any card…”: 24px below final top → slide up + fade in */
+      #card-select-text.card-select-text--slide-in {
+        transition:
+          top 480ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 400ms ease-out;
+      }
+      /* Last-4 screen: “Enter last 4 digits…” + “Choose Another Card” — slide up from below */
+      #card-select-text.verify-entry-copy--slide-in,
+      #choose-another-card.verify-entry-copy--slide-in {
+        transition:
+          top 480ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 400ms ease-out;
+      }
+      #choose-another-card,
+      #add-another-above-stack {
         transform: translateX(-50%);
       }
-      /* “Add Card” after Verify — top set so control sits CARD_ADD_LINK_GAP px above stack */
-      #choose-another-card.choose-another--above-stack {
+      /* Above-stack links — top set so control sits CARD_ADD_LINK_GAP px above stack */
+      #choose-another-card.choose-another--above-stack,
+      #add-another-above-stack.choose-another--above-stack {
         transform: translateX(-50%) translateY(-100%);
       }
       /* Fine-tune per asset — number row / last-4 slot varies slightly */
       #card-millenia .card-oncard-digits {
-        left: 61.75%;
+        left: 28px;
         top: 52.75%;
-        transform: translate(calc(-50% + 64px), calc(-50% + 24px));
+        transform: translateY(24px);
       }
       #card-infinia .card-oncard-digits {
-        left: 62.75%;
+        left: 28px;
         top: 53%;
       }
       #card-swiggy .card-oncard-digits {
-        left: 62.25%;
+        left: 28px;
         top: 53.25%;
       }
       #card-tanue .card-oncard-digits {
-        left: 62.5%;
+        left: 28px;
         top: 53%;
       }
+      /* 105% of prior 344×252.27 artwork size */
       #wallet-final {
-        width: 344px;
-        height: 252.27px;
+        width: calc(344px * 1.05);
+        height: calc(252.27px * 1.05);
         max-width: none;
         object-fit: contain;
         transform: translateX(-50%) translateY(-50%) translateY(1000px) scale(0.9);
@@ -253,16 +293,27 @@
           transition: none;
         }
       }
+      /* Same 4px top edge as login / OTP sheets (index.html) */
+      .verify-success-toast__sheet-top-gradient {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 4px;
+        z-index: 1;
+        border-radius: 24px 24px 0 0;
+        background: linear-gradient(90deg, #ffb6ba 0%, #1c3fca 50%, #ffb1b6 100%);
+      }
       .verify-success-icon {
-        width: 52px;
-        height: 52px;
+        width: 40px;
+        height: 40px;
         border-radius: 9999px;
         background: #16a34a;
         color: #fff;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 32px;
+        font-size: 24px;
         line-height: 1;
         font-weight: 700;
       }
@@ -355,6 +406,13 @@
         >
           Let’s Verify if It’s You
         </p>
+        <button
+          type="button"
+          id="info-layer-add-card"
+          class="hidden shrink-0 text-center text-[12px] font-semibold text-[#1C3FCA] whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 hover:underline"
+        >
+          Add Another Card
+        </button>
         <div
           id="info-layer-subtext"
           class="w-[328px] text-center text-[#4b5563] text-[12px] leading-[1.4] opacity-80"
@@ -379,7 +437,18 @@
           class="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
         />
         <div class="card-oncard-digits card-oncard-digits--empty" aria-hidden="true">
-          <span class="card-oncard-digits__text"></span>
+          <div class="card-oncard-digits__dot-groups" aria-hidden="true">
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+          </div>
+          <span class="card-oncard-digits__last4"><span class="card-oncard-digits__text">3333</span></span>
         </div>
       </div>
       <div
@@ -387,14 +456,25 @@
         class="card-layer absolute left-1/2 top-[343px] w-[312px] h-[200px] z-[6] overflow-hidden rounded-[12px] pointer-events-auto select-none cursor-pointer"
       >
         <img
-          src="assets/card-tatanuo.png"
+          src="assets/card-tatanue.png"
           alt=""
           draggable="false"
           aria-hidden="true"
           class="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
         />
         <div class="card-oncard-digits card-oncard-digits--empty" aria-hidden="true">
-          <span class="card-oncard-digits__text"></span>
+          <div class="card-oncard-digits__dot-groups" aria-hidden="true">
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+          </div>
+          <span class="card-oncard-digits__last4"><span class="card-oncard-digits__text">3333</span></span>
         </div>
       </div>
       <div
@@ -409,7 +489,18 @@
           class="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
         />
         <div class="card-oncard-digits card-oncard-digits--empty" aria-hidden="true">
-          <span class="card-oncard-digits__text"></span>
+          <div class="card-oncard-digits__dot-groups" aria-hidden="true">
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+          </div>
+          <span class="card-oncard-digits__last4"><span class="card-oncard-digits__text">3333</span></span>
         </div>
       </div>
       <div
@@ -424,13 +515,24 @@
           class="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
         />
         <div class="card-oncard-digits card-oncard-digits--empty" aria-hidden="true">
-          <span class="card-oncard-digits__text"></span>
+          <div class="card-oncard-digits__dot-groups" aria-hidden="true">
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+            <span class="card-oncard-digits__group">
+              <span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span><span class="card-oncard-digits__dot"></span>
+            </span>
+          </div>
+          <span class="card-oncard-digits__last4"><span class="card-oncard-digits__text">3333</span></span>
         </div>
       </div>
 
       <p
         id="card-select-text"
-        class="absolute left-1/2 top-[280px] z-[30] text-[12px] font-semibold text-[#00875F] whitespace-nowrap opacity-0 transition-opacity duration-300 pointer-events-none"
+        class="absolute left-1/2 top-[280px] z-[30] text-[12px] font-semibold text-[#00875F] whitespace-nowrap opacity-0 pointer-events-none"
       >
         Select any card to verify
       </p>
@@ -438,9 +540,17 @@
       <button
         id="choose-another-card"
         type="button"
-        class="absolute left-1/2 top-[305px] z-[30] text-[12px] font-semibold text-[#1C3FCA] whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 hover:underline"
+        class="absolute left-1/2 top-[305px] z-[30] text-[12px] font-semibold text-[#1C3FCA] whitespace-nowrap opacity-0 pointer-events-none hover:underline"
       >
         Choose Another Card
+      </button>
+
+      <button
+        id="add-another-above-stack"
+        type="button"
+        class="absolute left-1/2 top-[305px] z-[30] text-[12px] font-semibold text-[#00875F] whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-300 hover:underline"
+      >
+        Select Card to Continue
       </button>
 
       <button
@@ -457,15 +567,15 @@
       >
         <div class="verify-success-toast__backdrop absolute inset-0 bg-black/25" aria-hidden="true"></div>
         <div
-          class="verify-success-toast__sheet relative w-full rounded-t-[24px] bg-white pt-3 px-6 pb-10 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] flex flex-col items-center text-center"
+          class="verify-success-toast__sheet relative w-full min-h-[212px] overflow-hidden rounded-t-[24px] bg-white pt-8 px-6 pb-10 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] flex flex-col items-center text-center"
           role="dialog"
           aria-modal="true"
           aria-labelledby="verify-success-title"
         >
-          <span class="mb-5 block h-1 w-10 shrink-0 rounded-full bg-neutral-200" aria-hidden="true"></span>
+          <div class="verify-success-toast__sheet-top-gradient" aria-hidden="true"></div>
           <div class="mx-auto verify-success-icon">✓</div>
-          <p id="verify-success-title" class="mt-4 text-[16px] font-semibold leading-tight text-[#111827]">
-            Verify Successful!
+          <p id="verify-success-title" class="mt-7 text-[16px] font-semibold leading-tight text-[#111827]">
+            Verification Successful!
           </p>
         </div>
       </div>
@@ -553,8 +663,8 @@
         draggable="false"
         id="wallet-final"
         class="absolute left-1/2 top-1/2 pointer-events-none select-none z-[10]"
-        width="344"
-        height="252"
+        width="361"
+        height="265"
       />
     </div>
     <script>
@@ -580,6 +690,8 @@
         var infoLayerSubtext = document.getElementById("info-layer-subtext");
         var cardSelectText = document.getElementById("card-select-text");
         var chooseAnotherCard = document.getElementById("choose-another-card");
+        var infoLayerAddCard = document.getElementById("info-layer-add-card");
+        var addAnotherAboveStack = document.getElementById("add-another-above-stack");
         var verifyCardCta = document.getElementById("verify-card-cta");
         var verifySuccessToast = document.getElementById("verify-success-toast");
         var keyboard = document.getElementById("card-verify-keyboard");
@@ -621,13 +733,13 @@
         var CARD_STACK_GAP = 51;
         /* Y of topmost card in stack = (wallet img top in frame) − this (see getWalletTopInFrame) */
         var CARD_STACK_OFFSET_ABOVE_WALLET = 210;
-        /* Vertical gap between hint / “Add Card” bottom and top-of-stack (px) */
+        /* Vertical gap between hint / above-stack link bottom and top-of-stack (px) */
         var CARD_SELECT_GAP_ABOVE_STACK = 2;
         var CARD_ADD_LINK_GAP_ABOVE_STACK = 4;
         var STACK_RETURN_RISE_PX = 400;
         var STACK_RETURN_ANIM_MS = 900;
         var INFO_TITLE_VERIFY = "Let’s Verify if It’s You";
-        var INFO_TITLE_STACK = "Select Card to Continue";
+        var INFO_TITLE_STACK = "We have added all these cards";
         var FINAL_PICK_ANIM_MS = 600;
         var CARD_SELECT_VERIFY_TOP = CARD_SELECT_VERIFY_TOP_BASE - VERIFY_INPUT_LIFT_PX;
         var CHOOSE_ANOTHER_VERIFY_TOP = CHOOSE_ANOTHER_VERIFY_TOP_BASE - VERIFY_INPUT_LIFT_PX;
@@ -660,8 +772,135 @@
         function syncCardSelectStackHint(stackBaseTopPx) {
           if (!cardSelectText) return;
           if (isVerifying || postVerifyFinalStack) return;
+          /* Don’t snap `top` while the hint is mid–slide-in (inline transition:none priming + rAF). */
+          if (cardSelectText.classList.contains("card-select-text--slide-in")) return;
           cardSelectText.classList.add("card-select-text--above-stack");
           cardSelectText.style.top = stackBaseTopPx - CARD_SELECT_GAP_ABOVE_STACK + "px";
+        }
+
+        /** Start this many px *below* final `top` (larger top value), then slide up into place */
+        var CARD_SELECT_HINT_SLIDE_FROM_BELOW_PX = 24;
+        function animateCardSelectHintReveal() {
+          if (!cardSelectText) return;
+          if (isVerifying || postVerifyFinalStack) return;
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            cardSelectText.textContent = "Select any card to verify";
+            cardSelectText.classList.add("card-select-text--above-stack");
+            cardSelectText.style.color = "";
+            cardSelectText.style.fontWeight = "";
+            cardSelectText.style.fontSize = "";
+            cardSelectText.style.top =
+              getStackBaseTopPx() - CARD_SELECT_GAP_ABOVE_STACK + "px";
+            cardSelectText.classList.remove("opacity-0");
+            cardSelectText.classList.add("opacity-100");
+            cardSelectText.removeAttribute("aria-hidden");
+            return;
+          }
+
+          var finalTop = getStackBaseTopPx() - CARD_SELECT_GAP_ABOVE_STACK;
+          var startTop = finalTop + CARD_SELECT_HINT_SLIDE_FROM_BELOW_PX;
+
+          cardSelectText.textContent = "Select any card to verify";
+          cardSelectText.classList.add("card-select-text--above-stack");
+          cardSelectText.style.color = "";
+          cardSelectText.style.fontWeight = "";
+          cardSelectText.style.fontSize = "";
+          cardSelectText.classList.remove("card-select-text--slide-in");
+          cardSelectText.style.transition = "none";
+          cardSelectText.style.top = startTop + "px";
+          cardSelectText.classList.add("opacity-0");
+          cardSelectText.classList.remove("opacity-100");
+          void cardSelectText.offsetHeight;
+
+          cardSelectText.classList.add("card-select-text--slide-in");
+          /* Inline `transition: none` beats the stylesheet; remove it so slide-in CSS can run. */
+          cardSelectText.style.removeProperty("transition");
+
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              cardSelectText.classList.remove("opacity-0");
+              cardSelectText.classList.add("opacity-100");
+              cardSelectText.removeAttribute("aria-hidden");
+              cardSelectText.style.top = finalTop + "px";
+            });
+          });
+
+          window.setTimeout(function () {
+            if (!cardSelectText) return;
+            cardSelectText.classList.remove("card-select-text--slide-in");
+            cardSelectText.style.removeProperty("transition");
+          }, 550);
+        }
+
+        var VERIFY_ENTRY_COPY_SLIDE_PX = 400;
+        function animateVerifyEntryCopy() {
+          var labelFinal = CARD_SELECT_VERIFY_TOP;
+          var chooseFinal = CHOOSE_ANOTHER_VERIFY_TOP;
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            if (cardSelectText) {
+              cardSelectText.style.top = labelFinal + "px";
+              cardSelectText.classList.remove("opacity-0");
+              cardSelectText.classList.add("opacity-100");
+              cardSelectText.removeAttribute("aria-hidden");
+            }
+            if (chooseAnotherCard) {
+              chooseAnotherCard.style.top = chooseFinal + "px";
+              chooseAnotherCard.classList.remove("opacity-0", "pointer-events-none");
+              chooseAnotherCard.classList.add("opacity-100", "pointer-events-auto");
+            }
+            return;
+          }
+          if (cardSelectText) {
+            cardSelectText.classList.remove("verify-entry-copy--slide-in");
+            cardSelectText.style.transition = "none";
+            cardSelectText.style.top = labelFinal + VERIFY_ENTRY_COPY_SLIDE_PX + "px";
+            cardSelectText.classList.add("opacity-0");
+            cardSelectText.classList.remove("opacity-100");
+          }
+          if (chooseAnotherCard) {
+            chooseAnotherCard.classList.remove("verify-entry-copy--slide-in");
+            chooseAnotherCard.style.transition = "none";
+            chooseAnotherCard.style.top = chooseFinal + VERIFY_ENTRY_COPY_SLIDE_PX + "px";
+            chooseAnotherCard.classList.add("opacity-0", "pointer-events-none");
+            chooseAnotherCard.classList.remove("opacity-100", "pointer-events-auto");
+          }
+          void (cardSelectText && cardSelectText.offsetHeight);
+
+          if (cardSelectText) {
+            cardSelectText.classList.add("verify-entry-copy--slide-in");
+            cardSelectText.style.removeProperty("transition");
+          }
+          if (chooseAnotherCard) {
+            chooseAnotherCard.classList.add("verify-entry-copy--slide-in");
+            chooseAnotherCard.style.removeProperty("transition");
+          }
+
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              if (cardSelectText) {
+                cardSelectText.classList.remove("opacity-0");
+                cardSelectText.classList.add("opacity-100");
+                cardSelectText.removeAttribute("aria-hidden");
+                cardSelectText.style.top = labelFinal + "px";
+              }
+              if (chooseAnotherCard) {
+                chooseAnotherCard.classList.remove("opacity-0", "pointer-events-none");
+                chooseAnotherCard.classList.add("opacity-100", "pointer-events-auto");
+                chooseAnotherCard.style.top = chooseFinal + "px";
+              }
+            });
+          });
+
+          window.setTimeout(function () {
+            if (cardSelectText) {
+              cardSelectText.classList.remove("verify-entry-copy--slide-in");
+              cardSelectText.style.removeProperty("transition");
+            }
+            if (chooseAnotherCard) {
+              chooseAnotherCard.classList.remove("verify-entry-copy--slide-in");
+              chooseAnotherCard.style.removeProperty("transition");
+            }
+          }, 550);
         }
 
         function getStackBaseTopPx() {
@@ -671,19 +910,48 @@
           return getWalletTopInFrame() - CARD_STACK_OFFSET_ABOVE_WALLET;
         }
 
-        function syncAddCardLinkAboveStack(optStackBaseTopPx) {
-          if (!chooseAnotherCard) return;
-          if (chooseAnotherCard.textContent !== "Add Card") return;
+        function hidePostVerifyAddCardChrome() {
+          if (infoLayerAddCard) {
+            infoLayerAddCard.classList.add("hidden");
+            infoLayerAddCard.classList.add("opacity-0", "pointer-events-none");
+            infoLayerAddCard.classList.remove("opacity-100", "pointer-events-auto");
+          }
+          if (addAnotherAboveStack) {
+            addAnotherAboveStack.classList.remove("choose-another--above-stack");
+            addAnotherAboveStack.style.top = "";
+            addAnotherAboveStack.classList.add("opacity-0", "pointer-events-none");
+            addAnotherAboveStack.classList.remove("opacity-100", "pointer-events-auto");
+          }
+        }
+
+        function setCardOverlaysVisible(visible) {
+          var overlays = document.querySelectorAll(".card-oncard-digits");
+          for (var oi = 0; oi < overlays.length; oi++) {
+            var ov = overlays[oi];
+            if (!ov) continue;
+            if (visible) {
+              ov.style.opacity = "";
+              ov.style.visibility = "";
+            } else {
+              ov.style.opacity = "0";
+              ov.style.visibility = "hidden";
+            }
+          }
+        }
+
+        function syncAddAnotherAboveStack(optStackBaseTopPx) {
+          if (!addAnotherAboveStack) return;
           var base =
             optStackBaseTopPx != null && !isNaN(parseFloat(optStackBaseTopPx, 10))
               ? parseFloat(optStackBaseTopPx, 10)
               : getStackBaseTopPx();
           if (isNaN(base)) return;
-          chooseAnotherCard.classList.add("choose-another--above-stack");
-          chooseAnotherCard.style.top = base - CARD_ADD_LINK_GAP_ABOVE_STACK + "px";
+          addAnotherAboveStack.classList.add("choose-another--above-stack");
+          addAnotherAboveStack.style.top = base - CARD_ADD_LINK_GAP_ABOVE_STACK + "px";
         }
 
-        function applyCardStackTops() {
+        function applyCardStackTops(opts) {
+          opts = opts || {};
           if (!frameShell || !el) return;
           if (!el.classList.contains("wallet-bottom")) return;
           if (isVerifying) return;
@@ -694,9 +962,11 @@
             if (!cards[si]) continue;
             cards[si].style.top = base + si * CARD_STACK_GAP + "px";
           }
-          syncCardSelectStackHint(base);
+          if (!opts.skipCardSelectHint) {
+            syncCardSelectStackHint(base);
+          }
           if (postVerifyFinalStack) {
-            syncAddCardLinkAboveStack();
+            syncAddAnotherAboveStack();
           }
         }
 
@@ -714,6 +984,7 @@
         function restoreInfoLayerVerifyCopy() {
           if (infoLayerTitle) infoLayerTitle.textContent = INFO_TITLE_VERIFY;
           if (infoLayerSubtext) infoLayerSubtext.classList.remove("hidden");
+          hidePostVerifyAddCardChrome();
         }
 
         function stackIndexOfCard(cardEl) {
@@ -796,6 +1067,9 @@
           return out;
         }
 
+        /** When leaving last-4 flow: verify title + “Choose Another” move down and fade (same copy; no text swap until hidden). */
+        var VERIFY_COPY_EXIT_DROP_PX = 100;
+
         /** Selected card eases to its stack Y; wallet + other cards rise from below (same pattern as returnToStackAfterVerify) */
         function animateReturnToStackFromChooseAnother() {
           if (!isVerifying || !activeCard) {
@@ -848,14 +1122,6 @@
             }, 220);
           }
 
-          if (chooseAnotherCard) {
-            chooseAnotherCard.classList.remove("choose-another--above-stack");
-            chooseAnotherCard.style.transition = "opacity 260ms ease-out";
-            chooseAnotherCard.classList.add("opacity-0", "pointer-events-none");
-            chooseAnotherCard.classList.remove("opacity-100", "pointer-events-auto");
-            chooseAnotherCard.style.top = "";
-          }
-
           restoreInfoLayerVerifyCopy();
           if (infoLayer) {
             infoLayer.style.transition = "top 600ms ease-out, transform 600ms ease-out, opacity 300ms ease-out";
@@ -867,13 +1133,43 @@
             infoLayer.removeAttribute("aria-hidden");
           }
 
-          if (cardSelectText) {
-            cardSelectText.textContent = "Select any card to verify";
-            cardSelectText.style.color = "";
-            cardSelectText.style.fontWeight = "";
-            cardSelectText.style.fontSize = "";
+          if (cardSelectText && chooseAnotherCard) {
+            cardSelectText.classList.remove(
+              "verify-entry-copy--slide-in",
+              "card-select-text--slide-in",
+              "card-select-text--above-stack"
+            );
+            chooseAnotherCard.classList.remove(
+              "choose-another--above-stack",
+              "verify-entry-copy--slide-in"
+            );
+            cardSelectText.style.removeProperty("transition");
+            chooseAnotherCard.style.removeProperty("transition");
+
+            var labelNow = parseFloat(cardSelectText.style.top, 10);
+            if (isNaN(labelNow)) labelNow = parseFloat(getComputedStyle(cardSelectText).top, 10);
+            if (isNaN(labelNow)) labelNow = CARD_SELECT_VERIFY_TOP;
+            var chooseNow = parseFloat(chooseAnotherCard.style.top, 10);
+            if (isNaN(chooseNow)) chooseNow = parseFloat(getComputedStyle(chooseAnotherCard).top, 10);
+            if (isNaN(chooseNow)) chooseNow = CHOOSE_ANOTHER_VERIFY_TOP;
+
+            var exitMs = stackMs;
+            var exitEase = "cubic-bezier(0.25, 0.1, 0.25, 1)";
+            var exitTrans =
+              "top " + exitMs + "ms " + exitEase + ", opacity " + exitMs + "ms ease-out";
+            chooseAnotherCard.classList.add("pointer-events-none");
+            chooseAnotherCard.classList.remove("pointer-events-auto");
+            cardSelectText.style.transition = exitTrans;
+            chooseAnotherCard.style.transition = exitTrans;
+            void cardSelectText.offsetHeight;
+            cardSelectText.style.top = labelNow + VERIFY_COPY_EXIT_DROP_PX + "px";
+            chooseAnotherCard.style.top = chooseNow + VERIFY_COPY_EXIT_DROP_PX + "px";
+            cardSelectText.classList.remove("opacity-100");
             cardSelectText.classList.add("opacity-0");
+            chooseAnotherCard.classList.remove("opacity-100");
+            chooseAnotherCard.classList.add("opacity-0");
             cardSelectText.setAttribute("aria-hidden", "true");
+            chooseAnotherCard.setAttribute("aria-hidden", "true");
           }
 
           var stackTopsReturn;
@@ -985,19 +1281,33 @@
               ck.style.zIndex = "";
             }
             postVerifyFinalStack = false;
+            setCardOverlaysVisible(true);
             postVerifyFinalPickDone = false;
             lastVerifiedStackIndex = -1;
-            applyCardStackTops();
-            if (el) el.style.zIndex = "";
             if (cardSelectText) {
-              cardSelectText.classList.remove("opacity-0");
-              cardSelectText.classList.add("opacity-100");
-              cardSelectText.removeAttribute("aria-hidden");
+              cardSelectText.style.removeProperty("transition");
+              cardSelectText.textContent = "Select any card to verify";
+              cardSelectText.style.color = "";
+              cardSelectText.style.fontWeight = "";
+              cardSelectText.style.fontSize = "";
+              cardSelectText.style.top = "";
+              cardSelectText.classList.remove("card-select-text--above-stack");
+              cardSelectText.classList.add("opacity-0");
+              cardSelectText.classList.remove("opacity-100");
+              cardSelectText.setAttribute("aria-hidden", "true");
             }
             if (chooseAnotherCard) {
+              chooseAnotherCard.style.removeProperty("transition");
+              chooseAnotherCard.style.top = "";
               chooseAnotherCard.textContent = "Choose Another Card";
-              chooseAnotherCard.style.transition = "";
+              chooseAnotherCard.classList.add("opacity-0", "pointer-events-none");
+              chooseAnotherCard.classList.remove("opacity-100", "pointer-events-auto");
+              chooseAnotherCard.setAttribute("aria-hidden", "true");
             }
+            applyCardStackTops({ skipCardSelectHint: true });
+            if (el) el.style.zIndex = "";
+            animateCardSelectHintReveal();
+            hidePostVerifyAddCardChrome();
           }, stackMs + 40);
         }
 
@@ -1055,22 +1365,23 @@
           }
 
           if (cardSelectText) {
+            cardSelectText.classList.remove(
+              "verify-entry-copy--slide-in",
+              "card-select-text--slide-in"
+            );
+            cardSelectText.style.removeProperty("transition");
             cardSelectText.textContent = "Select any card to verify";
             cardSelectText.style.top = "";
             cardSelectText.style.color = "";
             cardSelectText.style.fontWeight = "";
             cardSelectText.style.fontSize = "";
-            if (deferStackHint) {
-              cardSelectText.classList.add("opacity-0");
-              cardSelectText.classList.remove("opacity-100");
-              cardSelectText.setAttribute("aria-hidden", "true");
-            } else {
-              cardSelectText.classList.remove("opacity-0");
-              cardSelectText.classList.add("opacity-100");
-              cardSelectText.removeAttribute("aria-hidden");
-            }
+            cardSelectText.classList.add("opacity-0");
+            cardSelectText.classList.remove("opacity-100");
+            cardSelectText.setAttribute("aria-hidden", "true");
           }
           if (chooseAnotherCard) {
+            chooseAnotherCard.classList.remove("verify-entry-copy--slide-in");
+            chooseAnotherCard.style.removeProperty("transition");
             chooseAnotherCard.textContent = "Choose Another Card";
             chooseAnotherCard.classList.remove("choose-another--above-stack");
             chooseAnotherCard.style.top = "";
@@ -1109,9 +1420,13 @@
           }
           activeCard = null;
           postVerifyFinalStack = false;
+          setCardOverlaysVisible(true);
           postVerifyFinalPickDone = false;
           lastVerifiedStackIndex = -1;
-          applyCardStackTops();
+          applyCardStackTops({ skipCardSelectHint: true });
+          if (!deferStackHint) {
+            animateCardSelectHintReveal();
+          }
         }
 
         function animateFinalStackPick(pickedStackIndex) {
@@ -1155,6 +1470,16 @@
             chooseAnotherCard.style.transition = "opacity 450ms ease-out";
             chooseAnotherCard.classList.add("opacity-0", "pointer-events-none");
             chooseAnotherCard.classList.remove("opacity-100", "pointer-events-auto");
+          }
+          if (infoLayerAddCard) {
+            infoLayerAddCard.style.transition = "opacity 450ms ease-out";
+            infoLayerAddCard.classList.add("opacity-0", "pointer-events-none");
+            infoLayerAddCard.classList.remove("opacity-100", "pointer-events-auto");
+          }
+          if (addAnotherAboveStack) {
+            addAnotherAboveStack.style.transition = "opacity 450ms ease-out";
+            addAnotherAboveStack.classList.add("opacity-0", "pointer-events-none");
+            addAnotherAboveStack.classList.remove("opacity-100", "pointer-events-auto");
           }
 
           /* Hide floating digit strip before card_details navigation; on-card digits can show again */
@@ -1215,28 +1540,20 @@
             }
           }
 
-          // Swap label + show choose another card.
+          // Swap label + show choose another card (slide up from below + fade in).
           if (cardSelectText) {
             cardSelectText.classList.remove("card-select-text--above-stack");
             cardSelectText.textContent = "Enter last 4 digits to verify this Card";
-            cardSelectText.style.top = CARD_SELECT_VERIFY_TOP + "px";
             cardSelectText.style.color = "";
             cardSelectText.style.fontWeight = "";
             cardSelectText.style.fontSize = "";
-            cardSelectText.classList.remove("opacity-0");
-            cardSelectText.classList.add("opacity-100");
-            cardSelectText.removeAttribute("aria-hidden");
+            cardSelectText.setAttribute("aria-hidden", "true");
           }
           if (chooseAnotherCard) {
             chooseAnotherCard.classList.remove("choose-another--above-stack");
             chooseAnotherCard.textContent = "Choose Another Card";
-            chooseAnotherCard.style.top = CHOOSE_ANOTHER_VERIFY_TOP + "px";
-            chooseAnotherCard.style.transition = "";
-            chooseAnotherCard.classList.remove("opacity-0");
-            chooseAnotherCard.classList.add("opacity-100");
-            chooseAnotherCard.classList.remove("pointer-events-none");
-            chooseAnotherCard.classList.add("pointer-events-auto");
           }
+          animateVerifyEntryCopy();
 
           // Show keypad.
           if (keyboard) {
@@ -1248,20 +1565,15 @@
           }
 
           if (digitsWrap) {
-            digitsWrap.style.left = DIGITS_LEFT;
-            digitsWrap.style.zIndex = "35";
-            digitsWrap.style.transition = "none";
-            digitsWrap.style.top = cardStartTop + DIGITS_TOP_OFFSET + "px";
-            void digitsWrap.offsetHeight;
-            digitsWrap.style.transition = CARD_MOVE_EASE + ", opacity 300ms ease-out";
-            digitsWrap.classList.remove("opacity-0");
-            digitsWrap.classList.add("opacity-100");
-            digitsWrap.classList.add("pointer-events-none");
-            digitsWrap.setAttribute("aria-hidden", "false");
-            setFloatingDigitStripActive(true);
-            requestAnimationFrame(function () {
-              syncDigitsWrapToActiveCard();
-            });
+            // Keep floating strip hidden; only on-card overlay should show entered digits.
+            digitsWrap.classList.add("opacity-0", "pointer-events-none");
+            digitsWrap.classList.remove("opacity-100");
+            digitsWrap.setAttribute("aria-hidden", "true");
+            digitsWrap.style.top = "";
+            digitsWrap.style.left = "";
+            digitsWrap.style.transition = "";
+            digitsWrap.style.zIndex = "";
+            setFloatingDigitStripActive(false);
           }
 
           enteredDigits = [];
@@ -1286,11 +1598,19 @@
             infoLayer.style.top = 82 - POST_INPUT_SHIFT_UP_PX + "px";
           }
           if (cardSelectText) {
-            cardSelectText.classList.remove("card-select-text--above-stack");
+            cardSelectText.classList.remove(
+              "card-select-text--above-stack",
+              "verify-entry-copy--slide-in"
+            );
+            cardSelectText.style.transition = CARD_MOVE_EASE;
             cardSelectText.style.top = 388 - POST_INPUT_SHIFT_UP_PX + "px";
           }
           if (chooseAnotherCard) {
-            chooseAnotherCard.classList.remove("choose-another--above-stack");
+            chooseAnotherCard.classList.remove(
+              "choose-another--above-stack",
+              "verify-entry-copy--slide-in"
+            );
+            chooseAnotherCard.style.transition = CARD_MOVE_EASE;
             chooseAnotherCard.style.top = 418 - POST_INPUT_SHIFT_UP_PX + "px";
           }
           if (activeCard) {
@@ -1330,6 +1650,7 @@
           activeCard = null;
           lastVerifiedStackIndex = activeIdx;
           postVerifyFinalStack = false;
+          setCardOverlaysVisible(true);
           postVerifyFinalPickDone = false;
           renderDigits();
 
@@ -1408,10 +1729,23 @@
             cardSelectText.setAttribute("aria-hidden", "true");
           }
           if (chooseAnotherCard) {
-            chooseAnotherCard.textContent = "Add Card";
-            syncAddCardLinkAboveStack(stackTopsReturn[0]);
-            chooseAnotherCard.classList.remove("opacity-0", "pointer-events-none");
-            chooseAnotherCard.classList.add("opacity-100", "pointer-events-auto");
+            chooseAnotherCard.textContent = "Choose Another Card";
+            chooseAnotherCard.classList.remove("choose-another--above-stack");
+            chooseAnotherCard.style.top = "";
+            chooseAnotherCard.classList.add("opacity-0", "pointer-events-none");
+            chooseAnotherCard.classList.remove("opacity-100", "pointer-events-auto");
+          }
+          if (infoLayerAddCard) {
+            infoLayerAddCard.textContent = "Add Another Card";
+            infoLayerAddCard.classList.remove("hidden");
+            infoLayerAddCard.classList.remove("opacity-0", "pointer-events-none");
+            infoLayerAddCard.classList.add("opacity-100", "pointer-events-auto");
+          }
+          if (addAnotherAboveStack) {
+            addAnotherAboveStack.textContent = "Select Card to Continue";
+            syncAddAnotherAboveStack(stackTopsReturn[0]);
+            addAnotherAboveStack.classList.remove("opacity-0", "pointer-events-none");
+            addAnotherAboveStack.classList.add("opacity-100", "pointer-events-auto");
           }
 
           for (var i = 0; i < cards.length; i++) {
@@ -1491,6 +1825,7 @@
 
           window.setTimeout(function () {
             postVerifyFinalStack = true;
+            setCardOverlaysVisible(false);
             for (var k = 0; k < cards.length; k++) {
               var ck = cards[k];
               if (!ck) continue;
@@ -1649,15 +1984,15 @@
               }, idx * CARD_STAGGER_MS);
             })(i);
           }
-          // Green hint after the last card’s motion has time to finish (stagger + shared duration).
-          var hintDelayMs =
-            (lastCardIndex >= 0 ? lastCardIndex * CARD_STAGGER_MS : 0) + CARD_IN_ANIM_MS + 80;
+          // Start hint a little before the last card fully settles.
+          var hintDelayMs = Math.max(
+            0,
+            (lastCardIndex >= 0 ? lastCardIndex * CARD_STAGGER_MS : 0) + CARD_IN_ANIM_MS - 120
+          );
           resetCardVerifyUI({ deferStackHint: true });
           if (cardSelectText) {
             setTimeout(function () {
-              cardSelectText.classList.remove("opacity-0");
-              cardSelectText.classList.add("opacity-100");
-              cardSelectText.removeAttribute("aria-hidden");
+              animateCardSelectHintReveal();
             }, hintDelayMs);
           }
         },
@@ -1675,8 +2010,8 @@
             if (isVerifying && activeCard) {
               syncDigitsWrapToActiveCard();
             }
-            if (chooseAnotherCard && chooseAnotherCard.textContent === "Add Card") {
-              syncAddCardLinkAboveStack();
+            if (postVerifyFinalStack) {
+              syncAddAnotherAboveStack();
             }
           }, 120);
         });

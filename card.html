@@ -10,14 +10,16 @@
       }
       html {
         height: 100%;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
       html,
       body {
         margin: 0;
         min-height: 100%;
-        height: 100%;
-        overflow: hidden;
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
@@ -42,17 +44,17 @@
         max-width: none;
         min-height: 100vh;
         min-height: 100dvh;
-        height: 100dvh;
-        max-height: 100dvh;
+        height: auto;
+        max-height: none;
         display: flex;
         flex-direction: column;
         flex-shrink: 0;
-        overflow: hidden;
+        overflow: visible;
       }
       @supports not (height: 100dvh) {
         .mobile-page {
-          height: 100vh;
-          max-height: 100vh;
+          height: auto;
+          max-height: none;
         }
       }
       .mobile-page__bg {
@@ -61,7 +63,7 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: #0c101f;
+        background-color: #ffffff;
         z-index: 0;
         pointer-events: none;
         transition: background-color 0.56s cubic-bezier(0.2, 0.85, 0.2, 1);
@@ -102,6 +104,7 @@
       .frame-root {
         position: relative;
         z-index: 2;
+        --below-ui-shift: 0px;
         width: 100%;
         flex: 1 1 auto;
         min-height: 0;
@@ -212,6 +215,7 @@
       /* Cards layer — first card top at 109px from frame; rail absolute on frame-root */
       .frame-root__creditcard {
         flex: 0 0 auto;
+        --card-frame-height: 156px;
         display: flex;
         flex-direction: column;
         gap: 0;
@@ -226,7 +230,7 @@
         top: auto;
         width: 100%;
         min-width: 0;
-        height: 156px;
+        height: var(--card-frame-height);
         display: flex;
         align-items: center;
         overflow-x: auto;
@@ -256,7 +260,7 @@
         position: relative;
         flex: 0 0 auto;
         width: 264px;
-        height: 156px;
+        height: var(--card-frame-height);
         aspect-ratio: 264 / 156;
         border-radius: 14px;
         scroll-snap-align: center;
@@ -350,8 +354,8 @@
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;
-        filter: blur(calc(4px * var(--swiggy-mask-progress)));
-        transform: scale(calc(1 + (0.04 * var(--swiggy-mask-progress))));
+        filter: none;
+        transform: none;
         transform-origin: center center;
       }
       .cc_swigy::before {
@@ -385,7 +389,7 @@
       .cc_infinia,
       .cc_tatanue,
       .cc_millenia {
-        transform: translateY(calc(30px * var(--swiggy-mask-progress)));
+        transform: none;
       }
       .creditcard_swiggy_comp__top {
         display: flex;
@@ -413,7 +417,7 @@
       }
       .creditcard_swiggy_comp__mid {
         display: block;
-        margin-top: 20px;
+        margin-top: 44px;
         transform: translateY(calc(-10px * var(--swiggy-mask-progress)));
         opacity: calc(1 - var(--swiggy-mask-progress));
         transform-origin: left top;
@@ -450,8 +454,7 @@
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        transform: translateY(calc(-48px * var(--swiggy-mask-progress)))
-          scale(calc(1 + (0.75 * var(--swiggy-mask-progress))));
+        transform: translateY(calc(-64px * var(--swiggy-mask-progress)));
         transform-origin: left center;
       }
       .creditcard_swiggy_comp__dots {
@@ -517,11 +520,12 @@
         align-items: center;
         justify-content: flex-start;
         gap: 16px;
-        margin-top: 16px;
-        padding: 0 48px 18px;
+        margin-top: 8px;
+        padding: 0 48px 8px;
         line-height: 0;
         position: relative;
         z-index: 2;
+        transform: translateY(var(--below-ui-shift));
       }
       .frame-root__card-dots-svg {
         display: block;
@@ -553,10 +557,11 @@
         background: transparent;
         position: relative;
         z-index: 1;
-        margin-top: 16px;
+        margin-top: 8px;
+        transform: translateY(var(--below-ui-shift));
       }
       .frame-root__creditcard + .frame-root__card-settings {
-        margin-top: 16px;
+        margin-top: 8px;
       }
       .frame-root__card-settings__toggle {
         flex-shrink: 0;
@@ -717,6 +722,8 @@
         background: #fff;
         border-radius: 24px 24px 0 0;
         overflow: hidden;
+        transform: translateY(var(--below-ui-shift));
+        margin-bottom: var(--below-ui-shift);
       }
       .content__accent {
         flex: 0 0 auto;
@@ -1484,10 +1491,23 @@
         background: #ffffff;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-start;
         gap: 24px;
         flex-shrink: 0;
         box-sizing: border-box;
+        overflow: hidden;
+      }
+      .content2b__benefit-card--spread {
+        justify-content: space-between;
+      }
+      .content2b__benefit-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        box-shadow: inset 0 0 0 3px #ffffff,
+          inset 0 0 56px 0 rgba(234, 243, 255, 0.6);
       }
       .content2b__benefit-top {
         width: 100%;
@@ -1507,18 +1527,30 @@
         line-height: 1.2;
       }
       .content2b__benefit-icon-wrap {
-        width: 96px;
+        width: 91px;
         height: 96px;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+      }
+      .content2b__benefit-icon-wrap--flip .content2b__benefit-icon {
+        transform: rotate(180deg) scaleY(-1);
       }
       .content2b__benefit-icon {
         display: block;
         width: 96px;
         height: 96px;
+        max-width: none;
         object-fit: contain;
         user-select: none;
+      }
+      .content2b__benefit-icon--rewards {
+        width: 104%;
+        height: 100%;
+        margin-left: -3.5%;
+        object-fit: cover;
+        object-position: center top;
       }
       .content2b__benefit-copy {
         width: 100%;
@@ -1589,7 +1621,7 @@
         width: 16px;
         height: 16px;
         display: block;
-        transform: rotate(180deg);
+        flex-shrink: 0;
       }
       /*
        * Bottom nav — full frame width, fixed 78px height; artwork scales in slot (mycards-bottombar.svg).
@@ -1605,7 +1637,7 @@
         height: 78px;
         padding: 0;
         margin: 0;
-        margin-top: auto;
+        margin-top: 0;
         z-index: 4;
         /* Fills transparent SVG padding (shadow/viewBox) so frame bg doesn’t show as “blue gutters” */
         background: #333333;
@@ -1730,7 +1762,12 @@
         overflow: hidden;
         padding-top: 8px;
         padding-bottom: 12px;
-        transform: translate3d(100%, 0, 0);
+        transform: translate3d(0, -100vh, 0);
+      }
+      @supports (height: 100dvh) {
+        .frame-root.cd-intro .frame-root__product-tabs {
+          transform: translate3d(0, -100dvh, 0);
+        }
       }
       .frame-root.cd-intro .frame-root__creditcard-below {
         opacity: 0;
@@ -1896,14 +1933,6 @@
               data-card="swiggy-comp"
               aria-label="Swiggy texture credit card component"
             >
-              <span class="creditcard_swiggy_comp__top">
-                <span class="creditcard_swiggy_comp__brand">
-                  <svg class="creditcard_swiggy_comp__brand-svg" width="117" height="31" viewBox="0 0 117 31" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Swiggy">
-                    <image href="assets/swiggy-logo-ref.png" x="0" y="0" width="117" height="31" preserveAspectRatio="xMidYMid meet"/>
-                  </svg>
-                </span>
-                <span class="creditcard_swiggy_comp__type">Credit Card</span>
-              </span>
               <span class="creditcard_swiggy_comp__mid">
                 <span class="creditcard_swiggy_comp__limit-label">AVAILABLE CREDIT LIMIT</span>
                 <span class="creditcard_swiggy_comp__limit-value">₹1,20,000</span>
@@ -1946,14 +1975,6 @@
               data-card="infinia-comp"
               aria-label="Infinia custom credit card component"
             >
-              <span class="creditcard_swiggy_comp__top">
-                <span class="creditcard_swiggy_comp__brand">
-                  <svg class="creditcard_swiggy_comp__brand-svg" width="81" height="16" viewBox="0 0 81 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Infinia">
-                    <image href="assets/infinia-logo-ref.png" x="0" y="0" width="81" height="16" preserveAspectRatio="xMidYMid meet"/>
-                  </svg>
-                </span>
-                <span class="creditcard_swiggy_comp__type">Credit Card</span>
-              </span>
               <span class="creditcard_swiggy_comp__mid">
                 <span class="creditcard_swiggy_comp__limit-label">AVAILABLE CREDIT LIMIT</span>
                 <span class="creditcard_swiggy_comp__limit-value">₹56,422</span>
@@ -1996,14 +2017,6 @@
               data-card="tatanue-comp"
               aria-label="Tatanuo texture credit card component"
             >
-              <span class="creditcard_swiggy_comp__top">
-                <span class="creditcard_swiggy_comp__brand">
-                  <svg class="creditcard_swiggy_comp__brand-svg" width="81" height="16" viewBox="0 0 81 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Tata NeuCard">
-                    <image href="assets/tata-neucard-logo-ref.png" x="0" y="0" width="81" height="16" preserveAspectRatio="xMidYMid meet"/>
-                  </svg>
-                </span>
-                <span class="creditcard_swiggy_comp__type">Credit Card</span>
-              </span>
               <span class="creditcard_swiggy_comp__mid">
                 <span class="creditcard_swiggy_comp__limit-label">AVAILABLE CREDIT LIMIT</span>
                 <span class="creditcard_swiggy_comp__limit-value">₹1,75,000</span>
@@ -2046,14 +2059,6 @@
               data-card="millenia-comp"
               aria-label="Millenia texture credit card component"
             >
-              <span class="creditcard_swiggy_comp__top">
-                <span class="creditcard_swiggy_comp__brand">
-                  <svg class="creditcard_swiggy_comp__brand-svg" width="81" height="16" viewBox="0 0 81 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Millenia">
-                    <image href="assets/millenia-logo-ref.png" x="0" y="0" width="81" height="16" preserveAspectRatio="xMidYMid meet"/>
-                  </svg>
-                </span>
-                <span class="creditcard_swiggy_comp__type">Credit Card</span>
-              </span>
               <span class="creditcard_swiggy_comp__mid">
                 <span class="creditcard_swiggy_comp__limit-label">AVAILABLE CREDIT LIMIT</span>
                 <span class="creditcard_swiggy_comp__limit-value">₹56,422</span>
@@ -2481,11 +2486,11 @@
               </div>
               <div class="content2b__cards-scroll">
                 <div class="content2b__cards-crop">
-                  <article class="content2b__benefit-card">
+                  <article class="content2b__benefit-card content2b__benefit-card--spread">
                     <div class="content2b__benefit-top">
                       <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
                       <div class="content2b__benefit-icon-wrap">
-                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/df39bd77979bd22fb766c707cd8d731d0b2fb888.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                        <img class="content2b__benefit-icon content2b__benefit-icon--rewards" src="assets/content3-benefit-rewards.png" alt="" loading="lazy" decoding="async" draggable="false" />
                       </div>
                       <div class="content2b__benefit-copy">
                         <p class="content2b__benefit-title">Membership Rewards Points</p>
@@ -2497,11 +2502,11 @@
                       <p class="content2b__benefit-meta-value">₹1.90L</p>
                     </div>
                   </article>
-                  <article class="content2b__benefit-card">
+                  <article class="content2b__benefit-card content2b__benefit-card--spread">
                     <div class="content2b__benefit-top">
                       <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
-                      <div class="content2b__benefit-icon-wrap">
-                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/b83ab57af6e7d292cdc64804c93255e0719ded76.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                      <div class="content2b__benefit-icon-wrap content2b__benefit-icon-wrap--flip">
+                        <img class="content2b__benefit-icon" src="assets/content3-benefit-lounge.png" alt="" loading="lazy" decoding="async" draggable="false" />
                       </div>
                       <div class="content2b__benefit-copy">
                         <p class="content2b__benefit-title">Complementary Lounge Visits</p>
@@ -2516,8 +2521,8 @@
                   <article class="content2b__benefit-card">
                     <div class="content2b__benefit-top">
                       <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
-                      <div class="content2b__benefit-icon-wrap">
-                        <img class="content2b__benefit-icon" src="assets/content3-benefit-artwork.svg" alt="" loading="lazy" decoding="async" draggable="false" />
+                      <div class="content2b__benefit-icon-wrap content2b__benefit-icon-wrap--flip">
+                        <img class="content2b__benefit-icon" src="assets/content3-benefit-vip.png" alt="" loading="lazy" decoding="async" draggable="false" />
                       </div>
                       <div class="content2b__benefit-copy">
                         <p class="content2b__benefit-title">Pass to VIP Air Lounge</p>
@@ -2526,14 +2531,14 @@
                     </div>
                     <div class="content2b__benefit-meta">
                       <p class="content2b__benefit-meta-label">Claimed</p>
-                      <img class="content2b__benefit-chevron" src="assets/due-back-arrow.svg" alt="" loading="lazy" decoding="async" draggable="false" />
+                      <img class="content2b__benefit-chevron" src="assets/content3-benefit-chevron.svg" alt="" loading="lazy" decoding="async" draggable="false" />
                     </div>
                   </article>
                   <article class="content2b__benefit-card">
                     <div class="content2b__benefit-top">
                       <p class="content2b__benefit-date">8 MAY - 8 JUL</p>
                       <div class="content2b__benefit-icon-wrap">
-                        <img class="content2b__benefit-icon" src="http://localhost:3845/assets/c28b82d5e71b5dd150edcb3c7d5cb5c3ece9e450.png" alt="" loading="lazy" decoding="async" draggable="false" />
+                        <img class="content2b__benefit-icon" src="assets/content3-benefit-taj.png" alt="" loading="lazy" decoding="async" draggable="false" />
                       </div>
                       <div class="content2b__benefit-copy">
                         <p class="content2b__benefit-title">Reward Points + Taj Voucher</p>
@@ -2577,9 +2582,10 @@
       (function () {
         var scrollEl = document.querySelector(".frame-root__scrollable");
         var animatedCards = document.querySelectorAll(".cc_swigy, .cc_infinia, .cc_tatanue, .cc_millenia");
+        var frameRoot = document.querySelector(".frame-root");
         if (!scrollEl || !animatedCards.length) return;
 
-        var MIN_MASK_SCALE = 0.7;
+        var MIN_MASK_SCALE = 0.56;
         var MASK_SCROLL_SENSITIVITY = 0.0012;
         var maskScale = 1;
         var touchY = null;
@@ -2595,6 +2601,9 @@
           animatedCards.forEach(function (card) {
             card.style.setProperty("--swiggy-mask-progress", String(progress));
           });
+          if (frameRoot) {
+            frameRoot.style.setProperty("--below-ui-shift", (-progress * 64).toFixed(2) + "px");
+          }
         }
 
         function updateMaskByDelta(deltaY) {
