@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=overlays-content"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content"
     />
     <!-- Matches .frame-root gradient top (#080326) for mobile browser chrome / status tint -->
     <meta name="theme-color" content="#080326" />
@@ -458,17 +458,23 @@
         function updateKeyboardShift() {
           if (!isMobileInputFocused || !frameRoot) return;
           var vv = window.visualViewport;
-          var viewportHeight = vv ? vv.height : window.innerHeight;
+          var viewportBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
           var ctaRect = btnOtp.getBoundingClientRect();
-          var safeBottom = viewportHeight - 12;
+          var safeBottom = viewportBottom - 20;
           var overlap = Math.max(0, ctaRect.bottom - safeBottom);
-          var shiftY = Math.min(overlap, 260);
+          var shiftY = Math.min(overlap + 8, 520);
           frameRoot.style.transition = "transform 180ms ease";
           frameRoot.style.transform = shiftY > 0 ? "translateY(-" + Math.round(shiftY) + "px)" : "";
           window.scrollTo(0, 0);
         }
 
-        var OTP_ABOVE_KEYBOARD = 40;
+        function getVisualViewportBottom() {
+          var vv = window.visualViewport;
+          if (!vv) return window.innerHeight;
+          return vv.offsetTop + vv.height;
+        }
+
+        var OTP_ABOVE_KEYBOARD = 72;
         var otpInsetDebounceTimer = null;
         var lastOtpBottomPx = null;
 
@@ -495,12 +501,22 @@
         }
 
         function applyOtpKeyboardInset() {
-          if (!otpSheet || !otpRaw) return;
+          if (!otpSheet || !otpRaw || !otpVerifyBtn) return;
           var inset = getVisualKeyboardInset();
           var otpFocused = document.activeElement === otpRaw;
           var sheetOpen = otpSheet.classList.contains("translate-y-0");
-          if (otpFocused && sheetOpen && inset > 48) {
-            var next = Math.round(inset + OTP_ABOVE_KEYBOARD);
+          if (otpFocused && sheetOpen) {
+            var visibleBottom = getVisualViewportBottom();
+            var verifyRect = otpVerifyBtn.getBoundingClientRect();
+            var pad = 20;
+            var liftForVerify = verifyRect.bottom - visibleBottom + pad;
+            var fromInset = Math.max(0, inset) + OTP_ABOVE_KEYBOARD;
+            var next = Math.max(Math.round(fromInset), Math.round(liftForVerify));
+            if (next < 12) {
+              lastOtpBottomPx = null;
+              otpSheet.style.bottom = "";
+              return;
+            }
             if (lastOtpBottomPx !== null && Math.abs(next - lastOtpBottomPx) < 6) {
               return;
             }
