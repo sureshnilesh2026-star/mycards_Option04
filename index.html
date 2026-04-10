@@ -61,6 +61,13 @@
         flex-direction: column;
         overflow: hidden;
         background: linear-gradient(135deg, #080326 0%, #0e346b 100%);
+        /* One smooth curve for keyboard-driven lift — avoid toggling transition in JS */
+        transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .frame-root {
+          transition-duration: 0.01ms;
+        }
       }
       @supports not (height: 100dvh) {
         .frame-root {
@@ -468,7 +475,6 @@
         var otpSheetSlidingIn = false;
         /** Login: wait for keyboard, then lift frame — first lift no earlier than this after mobile focus. */
         var LOGIN_KB_LIFT_DELAY_MS = 300;
-        var LOGIN_FRAME_SHIFT_MS = 360;
         /** After Get OTP: wait before OTP sheet enters; keeps keyboard on mobile during delay. */
         var OTP_OPEN_AFTER_GET_OTP_MS = 300;
         /** OTP sheet slide duration (must match Tailwind duration on #otp-sheet / #otp-backdrop). */
@@ -477,21 +483,30 @@
         var loginKbLiftPrimed = false;
         /** Skip resetKeyboardShift on mobile blur while OTP sheet is being opened from Get OTP. */
         var suppressMobileBlurReset = false;
+        /** Last applied lift (px); -1 = unknown, always apply next */
+        var lastKbShiftPx = -1;
+        var KB_SHIFT_DEADZONE_PX = 10;
+        /** Debounce visualViewport so resize bursts don’t re-target transform many times/sec */
+        var VIEWPORT_SHIFT_DEBOUNCE_MS = 220;
 
         function resetKeyboardShift() {
           clearTimeout(keyboardShiftDebounceTimer);
           keyboardShiftDebounceTimer = null;
           loginKbLiftPrimed = false;
+          lastKbShiftPx = -1;
           if (!frameRoot) return;
-          frameRoot.style.transform = "";
-          frameRoot.style.transition = "";
+          frameRoot.style.transform = "translateY(0)";
+          window.scrollTo(0, 0);
         }
         function scheduleKeyboardShift() {
           if (otpSheetSlidingIn) return;
           clearTimeout(keyboardShiftDebounceTimer);
-          var delay = 100;
+          var delay = VIEWPORT_SHIFT_DEBOUNCE_MS;
           if (isMobileInputFocused && !isOtpInputFocused && !loginKbLiftPrimed) {
-            delay = Math.max(50, LOGIN_KB_LIFT_DELAY_MS - (Date.now() - mobileFocusAt));
+            delay = Math.max(
+              VIEWPORT_SHIFT_DEBOUNCE_MS,
+              LOGIN_KB_LIFT_DELAY_MS - (Date.now() - mobileFocusAt)
+            );
           }
           keyboardShiftDebounceTimer = window.setTimeout(function () {
             keyboardShiftDebounceTimer = null;
@@ -514,11 +529,18 @@
           var bottomReserve = isOtpInputFocused ? 4 : 32;
           var safeBottom = viewportBottom - bottomReserve;
           var overlap = Math.max(0, targetRect.bottom - safeBottom);
-          var shiftY = Math.min(overlap, 420);
-          frameRoot.style.transition = isOtpInputFocused
-            ? "transform 280ms ease-out"
-            : "transform " + LOGIN_FRAME_SHIFT_MS + "ms ease-out";
-          frameRoot.style.transform = shiftY > 0 ? "translateY(-" + Math.round(shiftY) + "px)" : "";
+          var rawY = Math.min(overlap, 420);
+          var shiftY = Math.round(rawY / 4) * 4;
+          if (
+            shiftY > 0 &&
+            lastKbShiftPx >= 0 &&
+            Math.abs(shiftY - lastKbShiftPx) < KB_SHIFT_DEADZONE_PX
+          ) {
+            return;
+          }
+          lastKbShiftPx = shiftY;
+          frameRoot.style.transform =
+            shiftY > 0 ? "translateY(-" + shiftY + "px)" : "translateY(0)";
           window.scrollTo(0, 0);
         }
 
@@ -572,7 +594,7 @@
 
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", scheduleKeyboardShift);
-          window.visualViewport.addEventListener("scroll", scheduleKeyboardShift);
+          /* scroll paired with resize on many mobile browsers — doubles updates and causes jitter */
         }
 
         function focusOtpFieldForKeyboard() {
@@ -623,6 +645,7 @@
             otpSheetSlidingIn = false;
             suppressMobileBlurReset = false;
             if (!otpSheet.classList.contains("translate-y-0")) return;
+            lastKbShiftPx = -1;
             updateKeyboardShift();
             scheduleKeyboardShift();
           });
