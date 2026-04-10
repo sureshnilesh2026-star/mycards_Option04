@@ -61,13 +61,6 @@
         flex-direction: column;
         overflow: hidden;
         background: linear-gradient(135deg, #080326 0%, #0e346b 100%);
-        /* One smooth curve for keyboard-driven lift — avoid toggling transition in JS */
-        transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .frame-root {
-          transition-duration: 0.01ms;
-        }
       }
       @supports not (height: 100dvh) {
         .frame-root {
@@ -168,6 +161,17 @@
         display: none;
         width: 0;
         height: 0;
+      }
+      /* Smooth lift of entire frame with OS keyboard (login / OTP); JS sets transform */
+      .frame-root {
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        will-change: transform;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .frame-root {
+          transition: none;
+          will-change: auto;
+        }
       }
     </style>
   </head>
@@ -299,12 +303,12 @@
       <!-- OTP layer: bottom sheet — flush to frame bottom (height matches login sheet token) -->
       <div
         id="otp-backdrop"
-        class="absolute inset-0 bg-black/25 opacity-0 pointer-events-none transition-opacity duration-[480ms] ease-out z-[45]"
+        class="absolute inset-0 bg-black/25 opacity-0 pointer-events-none transition-opacity duration-300 ease-out z-[45]"
         aria-hidden="true"
       ></div>
       <div
         id="otp-sheet"
-        class="absolute left-0 right-0 bottom-0 h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform transition-opacity duration-[480ms] ease-out z-[50]"
+        class="absolute left-0 right-0 bottom-0 h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform transition-opacity duration-300 ease-out z-[50]"
         role="dialog"
         aria-modal="true"
         aria-label="Enter OTP"
@@ -473,48 +477,31 @@
         var keyboardShiftDebounceTimer = null;
         /** While true, OTP sheet transform is animating — do not move .frame-root (prevents bounce). */
         var otpSheetSlidingIn = false;
-        /** Login: wait for keyboard, then lift frame — first lift no earlier than this after mobile focus. */
-        var LOGIN_KB_LIFT_DELAY_MS = 300;
-        /** After Get OTP: wait before OTP sheet enters; keeps keyboard on mobile during delay. */
-        var OTP_OPEN_AFTER_GET_OTP_MS = 300;
-        /** OTP sheet slide duration (must match Tailwind duration on #otp-sheet / #otp-backdrop). */
-        var OTP_SHEET_ENTER_MS = 480;
-        var mobileFocusAt = 0;
-        var loginKbLiftPrimed = false;
-        /** Skip resetKeyboardShift on mobile blur while OTP sheet is being opened from Get OTP. */
-        var suppressMobileBlurReset = false;
-        /** Last applied lift (px); -1 = unknown, always apply next */
-        var lastKbShiftPx = -1;
-        var KB_SHIFT_DEADZONE_PX = 10;
-        /** Debounce visualViewport so resize bursts don’t re-target transform many times/sec */
-        var VIEWPORT_SHIFT_DEBOUNCE_MS = 220;
 
         function resetKeyboardShift() {
           clearTimeout(keyboardShiftDebounceTimer);
           keyboardShiftDebounceTimer = null;
-          loginKbLiftPrimed = false;
-          lastKbShiftPx = -1;
           if (!frameRoot) return;
-          frameRoot.style.transform = "translateY(0)";
-          window.scrollTo(0, 0);
+          frameRoot.style.transform = "";
         }
         function scheduleKeyboardShift() {
           if (otpSheetSlidingIn) return;
           clearTimeout(keyboardShiftDebounceTimer);
-          var delay = VIEWPORT_SHIFT_DEBOUNCE_MS;
-          if (isMobileInputFocused && !isOtpInputFocused && !loginKbLiftPrimed) {
-            delay = Math.max(
-              VIEWPORT_SHIFT_DEBOUNCE_MS,
-              LOGIN_KB_LIFT_DELAY_MS - (Date.now() - mobileFocusAt)
-            );
-          }
           keyboardShiftDebounceTimer = window.setTimeout(function () {
             keyboardShiftDebounceTimer = null;
-            if (isMobileInputFocused && !isOtpInputFocused) {
-              loginKbLiftPrimed = true;
-            }
             updateKeyboardShift();
-          }, delay);
+          }, 60);
+        }
+
+        /** Run once now + debounced follow-ups so lift tracks keyboard as it opens (smooth with CSS transition). */
+        function scheduleKeyboardShiftWithImmediate() {
+          if (otpSheetSlidingIn) return;
+          clearTimeout(keyboardShiftDebounceTimer);
+          updateKeyboardShift();
+          keyboardShiftDebounceTimer = window.setTimeout(function () {
+            keyboardShiftDebounceTimer = null;
+            updateKeyboardShift();
+          }, 60);
         }
 
         function updateKeyboardShift() {
@@ -529,18 +516,9 @@
           var bottomReserve = isOtpInputFocused ? 4 : 32;
           var safeBottom = viewportBottom - bottomReserve;
           var overlap = Math.max(0, targetRect.bottom - safeBottom);
-          var rawY = Math.min(overlap, 420);
-          var shiftY = Math.round(rawY / 4) * 4;
-          if (
-            shiftY > 0 &&
-            lastKbShiftPx >= 0 &&
-            Math.abs(shiftY - lastKbShiftPx) < KB_SHIFT_DEADZONE_PX
-          ) {
-            return;
-          }
-          lastKbShiftPx = shiftY;
-          frameRoot.style.transform =
-            shiftY > 0 ? "translateY(-" + shiftY + "px)" : "translateY(0)";
+          var shiftY = Math.min(overlap, 420);
+          /* transition lives on .frame-root in stylesheet — avoid resetting per frame (smoother with visualViewport) */
+          frameRoot.style.transform = shiftY > 0 ? "translateY(-" + Math.round(shiftY) + "px)" : "";
           window.scrollTo(0, 0);
         }
 
@@ -557,27 +535,21 @@
             finish();
           }
           otpSheet.addEventListener("transitionend", onEnd);
-          window.setTimeout(finish, OTP_SHEET_ENTER_MS + 80);
+          window.setTimeout(finish, 340);
         }
 
         mobile.addEventListener("focus", function () {
           isMobileInputFocused = true;
-          loginKbLiftPrimed = false;
-          mobileFocusAt = Date.now();
-          clearTimeout(keyboardShiftDebounceTimer);
-          keyboardShiftDebounceTimer = window.setTimeout(function () {
-            keyboardShiftDebounceTimer = null;
-            loginKbLiftPrimed = true;
-            updateKeyboardShift();
-          }, LOGIN_KB_LIFT_DELAY_MS);
+          requestAnimationFrame(function () {
+            scheduleKeyboardShiftWithImmediate();
+            window.setTimeout(scheduleKeyboardShiftWithImmediate, 120);
+            window.setTimeout(scheduleKeyboardShiftWithImmediate, 280);
+          });
         });
 
         mobile.addEventListener("blur", function () {
           isMobileInputFocused = false;
-          loginKbLiftPrimed = false;
-          if (!isOtpInputFocused && !suppressMobileBlurReset) {
-            resetKeyboardShift();
-          }
+          if (!isOtpInputFocused) resetKeyboardShift();
         });
 
         otpRaw.addEventListener("focus", function () {
@@ -594,7 +566,7 @@
 
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", scheduleKeyboardShift);
-          /* scroll paired with resize on many mobile browsers — doubles updates and causes jitter */
+          window.visualViewport.addEventListener("scroll", scheduleKeyboardShift);
         }
 
         function focusOtpFieldForKeyboard() {
@@ -643,9 +615,7 @@
           // then debounced viewport updates handle keyboard resize smoothly.
           whenOtpSheetSlideFinishes(function () {
             otpSheetSlidingIn = false;
-            suppressMobileBlurReset = false;
             if (!otpSheet.classList.contains("translate-y-0")) return;
-            lastKbShiftPx = -1;
             updateKeyboardShift();
             scheduleKeyboardShift();
           });
@@ -653,7 +623,6 @@
 
         function closeOtp() {
           otpSheetSlidingIn = false;
-          suppressMobileBlurReset = false;
           isOtpInputFocused = false;
           otpSheet.classList.add("translate-y-full", "opacity-0", "pointer-events-none");
           otpSheet.classList.remove("translate-y-0", "opacity-100", "pointer-events-auto");
@@ -701,8 +670,9 @@
           }
 
           getOtpFlowActive = true;
-          suppressMobileBlurReset = true;
-          /* Keep mobile focus + frame lift so keyboard stays up; OTP opens after delay. */
+          mobile.blur();
+          resetKeyboardShift();
+          isMobileInputFocused = false;
 
           setInfoText(defaultInfoText, false);
           btnOtp.disabled = true;
@@ -710,9 +680,9 @@
           otpLabel.classList.add("hidden");
           otpSpinner.classList.remove("hidden");
 
-          window.setTimeout(function () {
-            openOtp(v.slice(-4));
-          }, OTP_OPEN_AFTER_GET_OTP_MS);
+          // Open OTP sheet immediately in the same tap gesture so keyboard can
+          // appear from the start of the sheet slide-in animation on mobile.
+          openOtp(v.slice(-4));
 
           setTimeout(function () {
             otpSpinner.classList.add("hidden");
