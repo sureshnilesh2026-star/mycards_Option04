@@ -40,7 +40,6 @@
         height: 100%;
         overflow: hidden;
         overscroll-behavior: none;
-        overscroll-behavior-y: none;
       }
       body {
         font-family: Inter, system-ui, sans-serif;
@@ -51,6 +50,7 @@
         width: 100%;
         box-sizing: border-box;
         background: #ffffff;
+        overscroll-behavior: none;
       }
       /* Phone shell: full width; min dynamic viewport height, grows with content */
       .frame-root {
@@ -62,16 +62,21 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        overscroll-behavior: none;
         background: linear-gradient(135deg, #080326 0%, #0e346b 100%);
-        /* Linear = no elastic / ease overshoot feel when lifting with keyboard */
-        transition: transform 0.45s linear;
+        transition: transform 0.42s ease-out;
         will-change: transform;
+        overscroll-behavior: none;
       }
       @supports not (height: 100dvh) {
         .frame-root {
           height: 100vh;
         }
+      }
+      /* Prevent iOS/Android scroll chaining / rubber-band bounce */
+      .frame-root,
+      #login-sheet,
+      #otp-sheet {
+        overscroll-behavior: none;
       }
       .btn-loading svg {
         animation: spin 0.8s linear infinite;
@@ -98,7 +103,7 @@
         line-height: 1.25;
         color: #171717;
         outline: none;
-        transition: border-color 0.2s linear, padding 0.2s linear, box-shadow 0.2s linear;
+        transition: border-color 0.2s ease, padding 0.2s ease, box-shadow 0.2s ease;
         -webkit-tap-highlight-color: transparent;
       }
       .mobile-field__input::placeholder {
@@ -130,8 +135,8 @@
         background: #fff;
         padding: 0 4px;
         margin-left: -4px;
-        transition: top 0.2s linear, transform 0.2s linear, font-size 0.2s linear, color 0.2s linear,
-          font-weight 0.2s linear;
+        transition: top 0.2s ease, transform 0.2s ease, font-size 0.2s ease, color 0.2s ease,
+          font-weight 0.2s ease;
       }
       .mobile-field__input:focus + .mobile-field__label,
       .mobile-field__input:not(:placeholder-shown) + .mobile-field__label {
@@ -145,7 +150,7 @@
       #otp-code-field .otp-dot {
         display: inline-block;
         background-color: #d2d5db !important;
-        transition: background-color 0.15s linear;
+        transition: background-color 0.15s ease;
       }
       #otp-code-field .otp-dot.otp-dot--filled {
         background-color: #111827 !important;
@@ -167,18 +172,6 @@
         display: none;
         width: 0;
         height: 0;
-      }
-      #login-sheet,
-      #otp-sheet,
-      #otp-backdrop {
-        overscroll-behavior: none;
-      }
-      /* OTP/dialog motion: linear timing — no bounce-style easing */
-      #otp-backdrop {
-        transition: opacity 280ms linear !important;
-      }
-      #otp-sheet {
-        transition: transform 440ms linear, opacity 440ms linear !important;
       }
       @media (prefers-reduced-motion: reduce) {
         .frame-root {
@@ -233,7 +226,7 @@
       </header>
 
       <!-- Hero: marketing art only (SVG has no baked-in “Let’s Get Started” sheet; PNG export often does) -->
-      <div class="relative w-full min-h-0 flex-1 overflow-hidden overscroll-none">
+      <div class="relative w-full min-h-0 flex-1 overflow-hidden">
         <img
           src="assets/etb-hero-marketing.svg"
           width="360"
@@ -247,7 +240,7 @@
       <!-- Bottom sheet: interactive layer (matches Figma spacing; graphics above are unchanged) -->
       <div
         id="login-sheet"
-        class="flex flex-col flex-none h-sheet min-h-0 shrink-0 bg-white rounded-t-[24px] shadow-sheet relative z-20 overflow-hidden overscroll-none px-6 pt-0 pb-0"
+        class="flex flex-col flex-none h-sheet min-h-0 shrink-0 bg-white rounded-t-[24px] shadow-sheet relative z-20 overflow-hidden px-6 pt-0 pb-0"
       >
         <!-- Login Details top border (4px gradient) -->
         <div
@@ -278,7 +271,7 @@
           <button
             type="button"
             id="btn-otp"
-            class="mt-5 w-full rounded-xl bg-brand py-3 text-[14px] font-bold text-white tracking-wide shadow-sm transition-colors ease-linear hover:bg-brand-hover active:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2"
+            class="mt-5 w-full rounded-xl bg-brand py-3 text-[14px] font-bold text-white tracking-wide shadow-sm transition-colors hover:bg-brand-hover active:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2"
             aria-label="Get OTP"
           >
             <span id="otp-label">Get OTP</span>
@@ -316,12 +309,12 @@
       <!-- OTP layer: bottom sheet — flush to frame bottom (height matches login sheet token) -->
       <div
         id="otp-backdrop"
-        class="absolute inset-0 bg-black/25 opacity-0 pointer-events-none z-[45]"
+        class="absolute inset-0 bg-black/25 opacity-0 pointer-events-none transition-opacity duration-[440ms] ease-out z-[45]"
         aria-hidden="true"
       ></div>
       <div
         id="otp-sheet"
-        class="absolute left-0 right-0 bottom-0 h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none z-[50]"
+        class="absolute left-0 right-0 bottom-0 h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform transition-opacity duration-[440ms] ease-out z-[50]"
         role="dialog"
         aria-modal="true"
         aria-label="Enter OTP"
@@ -390,7 +383,7 @@
             type="button"
             id="otp-verify"
             disabled
-            class="w-full shrink-0 rounded-[11px] bg-[#1C3FCA] py-[12px] text-[16px] font-semibold text-white shadow-sm transition-opacity ease-linear disabled:pointer-events-none disabled:opacity-50"
+            class="w-full shrink-0 rounded-[11px] bg-[#1C3FCA] py-[12px] text-[16px] font-semibold text-white shadow-sm transition-opacity disabled:pointer-events-none disabled:opacity-50"
           >
             Verify OTP
           </button>
@@ -402,7 +395,7 @@
 
     <div
       id="toast"
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 max-w-[90vw] px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 ease-linear z-50"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 max-w-[90vw] px-4 py-2.5 rounded-lg bg-neutral-900 text-white text-sm shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50"
       role="status"
     ></div>
 
@@ -504,11 +497,10 @@
         }
 
         function scheduleKeyboardShift() {
+          if (isOtpInputFocused) return;
           clearTimeout(keyboardShiftDebounceTimer);
-          /* Batch visualViewport noise: OTP often fires many events while sheet + keyboard settle */
           var delay = 72;
-          if (isOtpInputFocused) delay = 130;
-          else if (isMobileInputFocused) delay = 110;
+          if (isMobileInputFocused) delay = 110;
           keyboardShiftDebounceTimer = window.setTimeout(function () {
             keyboardShiftDebounceTimer = null;
             updateKeyboardShift();
@@ -516,17 +508,15 @@
         }
 
         function updateKeyboardShift() {
-          if ((!isMobileInputFocused && !isOtpInputFocused) || !frameRoot) return;
+          /* OTP: overlay only — do not translate the whole frame (viewport uses overlays-content). */
+          if (isOtpInputFocused || !isMobileInputFocused || !frameRoot) return;
           if (keyboardShiftRaf) cancelAnimationFrame(keyboardShiftRaf);
           keyboardShiftRaf = requestAnimationFrame(function () {
             keyboardShiftRaf = null;
             var vv = window.visualViewport;
             var viewportBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
-            var targetRect = isOtpInputFocused
-              ? otpVerifyBtn.getBoundingClientRect()
-              : btnOtp.getBoundingClientRect();
-            /* OTP: keep sheet clearly above keyboard; login: slight overlap OK */
-            var bottomReserve = isOtpInputFocused ? 14 : 32;
+            var targetRect = btnOtp.getBoundingClientRect();
+            var bottomReserve = 32;
             var safeBottom = viewportBottom - bottomReserve;
             var overlap = Math.max(0, targetRect.bottom - safeBottom);
             var shiftY = Math.min(overlap, 420);
@@ -561,8 +551,6 @@
 
         otpRaw.addEventListener("focus", function () {
           isOtpInputFocused = true;
-          updateKeyboardShift();
-          scheduleKeyboardShift();
         });
 
         otpRaw.addEventListener("pointerdown", function () {
@@ -599,6 +587,18 @@
 
         function openOtp(last4) {
           otpLast4.textContent = last4;
+
+          /* Second open while sheet is already up (duplicate tap / gesture replay): avoid re-running
+             the slide transition and re-clearing the field — that reads as “OTP appearing twice”. */
+          if (
+            otpSheet.classList.contains("translate-y-0") &&
+            otpSheet.classList.contains("opacity-100")
+          ) {
+            isOtpInputFocused = true;
+            focusOtpFieldForKeyboard();
+            return;
+          }
+
           otpRaw.value = "";
           otpRaw.dispatchEvent(new Event("input"));
           syncOtpDots();
@@ -613,36 +613,24 @@
           otpBackdrop.classList.remove("opacity-0", "pointer-events-none");
           otpBackdrop.classList.add("opacity-100", "pointer-events-auto");
 
-          /* Keyboard with sheet: lift runs during slide (debounced) so sheet stays above keypad without flicker */
+          /* OTP mode before focus so mobile blur never calls resetKeyboardShift() mid-open */
           isOtpInputFocused = true;
+          resetKeyboardShift();
           focusOtpFieldForKeyboard();
-          requestAnimationFrame(function () {
-            updateKeyboardShift();
-            scheduleKeyboardShift();
-            focusOtpFieldForKeyboard();
-          });
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              updateKeyboardShift();
-              scheduleKeyboardShift();
-            });
-          });
           window.setTimeout(function () {
             if (document.activeElement !== otpRaw) {
-              focusOtpFieldForKeyboard();
+              try {
+                otpRaw.focus({ preventScroll: true });
+              } catch (e) {
+                otpRaw.focus();
+              }
             }
-            scheduleKeyboardShift();
-          }, 160);
-          window.setTimeout(function () {
-            if (document.activeElement !== otpRaw) {
-              otpRaw.click();
-              scheduleKeyboardShift();
-            }
-          }, 240);
+          }, 320);
         }
 
         function closeOtp() {
           isOtpInputFocused = false;
+          getOtpLastSuccessMs = -Infinity;
           otpSheet.classList.add("translate-y-full", "opacity-0", "pointer-events-none");
           otpSheet.classList.remove("translate-y-0", "opacity-100", "pointer-events-auto");
           otpBackdrop.classList.add("opacity-0", "pointer-events-none");
@@ -676,8 +664,8 @@
           window.location.href = "verify.html";
         });
 
-        var getOtpHandledByTouch = false;
         var getOtpFlowActive = false;
+        var getOtpLastSuccessMs = -Infinity;
         function runGetOtpFlow() {
           if (btnOtp.disabled || getOtpFlowActive) return;
           var v = mobile.value.trim();
@@ -688,10 +676,14 @@
             return;
           }
 
+          /* One clean open per intent: duplicate synthetic clicks in ~same gesture */
+          var now = performance.now();
+          if (now - getOtpLastSuccessMs < 720) return;
+          getOtpLastSuccessMs = now;
+
           getOtpFlowActive = true;
-          mobile.blur();
-          resetKeyboardShift();
-          isMobileInputFocused = false;
+          /* Do not blur/reset the frame here: that snaps translateY(0) and fights the OTP slide + keyboard (flicker).
+             openOtp focuses #otp-raw, which moves focus off the mobile field smoothly. */
 
           setInfoText(defaultInfoText, false);
           btnOtp.disabled = true;
@@ -713,22 +705,7 @@
           }, 1500);
         }
 
-        btnOtp.addEventListener(
-          "touchend",
-          function (e) {
-            if (btnOtp.disabled) return;
-            e.preventDefault();
-            getOtpHandledByTouch = true;
-            runGetOtpFlow();
-            window.setTimeout(function () {
-              getOtpHandledByTouch = false;
-            }, 500);
-          },
-          { passive: false }
-        );
-
         btnOtp.addEventListener("click", function () {
-          if (getOtpHandledByTouch) return;
           runGetOtpFlow();
         });
       })();
