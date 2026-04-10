@@ -297,7 +297,7 @@
       ></div>
       <div
         id="otp-sheet"
-        class="absolute left-0 right-0 bottom-[40px] h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform duration-300 ease-out transition-opacity z-[50]"
+        class="absolute left-0 right-0 bottom-0 h-sheet w-full max-w-full bg-[#fdfeff] rounded-t-[26px] overflow-hidden translate-y-full opacity-0 pointer-events-none transition-transform transition-opacity duration-300 ease-out z-[50]"
         role="dialog"
         aria-modal="true"
         aria-label="Enter OTP"
@@ -463,13 +463,28 @@
           setInfoText(defaultInfoText, false);
         });
 
+        var keyboardShiftDebounceTimer = null;
+        /** While true, OTP sheet transform is animating — do not move .frame-root (prevents bounce). */
+        var otpSheetSlidingIn = false;
+
         function resetKeyboardShift() {
+          clearTimeout(keyboardShiftDebounceTimer);
+          keyboardShiftDebounceTimer = null;
           if (!frameRoot) return;
           frameRoot.style.transform = "";
           frameRoot.style.transition = "";
         }
+        function scheduleKeyboardShift() {
+          if (otpSheetSlidingIn) return;
+          clearTimeout(keyboardShiftDebounceTimer);
+          keyboardShiftDebounceTimer = window.setTimeout(function () {
+            keyboardShiftDebounceTimer = null;
+            updateKeyboardShift();
+          }, 100);
+        }
 
         function updateKeyboardShift() {
+          if (otpSheetSlidingIn) return;
           if ((!isMobileInputFocused && !isOtpInputFocused) || !frameRoot) return;
           var vv = window.visualViewport;
           var viewportBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
@@ -482,15 +497,31 @@
           var overlap = Math.max(0, targetRect.bottom - safeBottom);
           var shiftY = Math.min(overlap, 420);
           frameRoot.style.transition = isOtpInputFocused
-            ? "transform 300ms ease-out"
-            : "transform 180ms ease";
+            ? "transform 280ms ease-out"
+            : "transform 180ms ease-out";
           frameRoot.style.transform = shiftY > 0 ? "translateY(-" + Math.round(shiftY) + "px)" : "";
           window.scrollTo(0, 0);
         }
 
+        function whenOtpSheetSlideFinishes(cb) {
+          var done = false;
+          function finish() {
+            if (done) return;
+            done = true;
+            otpSheet.removeEventListener("transitionend", onEnd);
+            cb();
+          }
+          function onEnd(e) {
+            if (e.target !== otpSheet || e.propertyName !== "transform") return;
+            finish();
+          }
+          otpSheet.addEventListener("transitionend", onEnd);
+          window.setTimeout(finish, 340);
+        }
+
         mobile.addEventListener("focus", function () {
           isMobileInputFocused = true;
-          setTimeout(updateKeyboardShift, 50);
+          window.setTimeout(updateKeyboardShift, 50);
         });
 
         mobile.addEventListener("blur", function () {
@@ -500,7 +531,9 @@
 
         otpRaw.addEventListener("focus", function () {
           isOtpInputFocused = true;
-          setTimeout(updateKeyboardShift, 0);
+          if (!otpSheetSlidingIn) {
+            scheduleKeyboardShift();
+          }
         });
 
         otpRaw.addEventListener("blur", function () {
@@ -509,8 +542,8 @@
         });
 
         if (window.visualViewport) {
-          window.visualViewport.addEventListener("resize", updateKeyboardShift);
-          window.visualViewport.addEventListener("scroll", updateKeyboardShift);
+          window.visualViewport.addEventListener("resize", scheduleKeyboardShift);
+          window.visualViewport.addEventListener("scroll", scheduleKeyboardShift);
         }
 
         function focusOtpFieldForKeyboard() {
@@ -534,6 +567,10 @@
           syncOtpDots();
           syncOtpVerifyButton();
 
+          otpSheetSlidingIn = true;
+          clearTimeout(keyboardShiftDebounceTimer);
+          keyboardShiftDebounceTimer = null;
+
           otpSheet.classList.remove("translate-y-full", "opacity-0", "pointer-events-none");
           otpSheet.classList.add("translate-y-0", "opacity-100", "pointer-events-auto");
           otpBackdrop.classList.remove("opacity-0", "pointer-events-none");
@@ -542,18 +579,27 @@
           // Start keyboard open with sheet slide-in (instead of waiting for a tap).
           isOtpInputFocused = true;
           focusOtpFieldForKeyboard();
-          updateKeyboardShift();
-          requestAnimationFrame(focusOtpFieldForKeyboard);
-          requestAnimationFrame(updateKeyboardShift);
-          setTimeout(function () {
+          requestAnimationFrame(function () {
+            focusOtpFieldForKeyboard();
+          });
+          window.setTimeout(function () {
             if (document.activeElement !== otpRaw) {
               focusOtpFieldForKeyboard();
             }
-            updateKeyboardShift();
           }, 120);
+
+          // Avoid frame lift fighting the sheet slide (removes bounce): shift after sheet transform settles,
+          // then debounced viewport updates handle keyboard resize smoothly.
+          whenOtpSheetSlideFinishes(function () {
+            otpSheetSlidingIn = false;
+            if (!otpSheet.classList.contains("translate-y-0")) return;
+            updateKeyboardShift();
+            scheduleKeyboardShift();
+          });
         }
 
         function closeOtp() {
+          otpSheetSlidingIn = false;
           isOtpInputFocused = false;
           otpSheet.classList.add("translate-y-full", "opacity-0", "pointer-events-none");
           otpSheet.classList.remove("translate-y-0", "opacity-100", "pointer-events-auto");
