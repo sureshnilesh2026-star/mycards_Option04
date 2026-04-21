@@ -145,13 +145,13 @@
         flex-direction: row;
         gap: 16px;
         background: #ffffff;
-        overflow-x: hidden;
+        overflow-x: auto;
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         scroll-behavior: smooth;
         overscroll-behavior-x: contain;
         overscroll-behavior-y: none;
-        touch-action: pan-y;
+        touch-action: pan-x pan-y;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -995,7 +995,7 @@
         pointer-events: none;
       }
       .infinia_content .card_animation--infinia .card_animation__frame {
-        top: -96px;
+        top: -128px;
         height: 600px;
         border-radius: 0;
         background: transparent;
@@ -2505,11 +2505,11 @@
       <div class="card_animation card_animation--infinia" aria-label="Infinia card animation frame">
         <section
           id="infinia-card-sequence"
-          class="card_animation__sequence relative h-[400px]"
+          class="card_animation__sequence"
           aria-label="Infinia sequence scroll section"
         >
-          <div class="card_animation__pin sticky top-0 h-screen flex items-center justify-center">
-            <div class="card_animation__frame relative mx-auto">
+          <div class="card_animation__pin">
+            <div class="card_animation__frame">
               <canvas
                 id="infinia-card-canvas"
                 class="card_animation__canvas block h-full w-full"
