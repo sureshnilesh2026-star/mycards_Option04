@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=overlays-content"
+    />
+    <title>MyCards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;700&family=Plus+Jakarta+Sans:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+              open: ["Open Sans", "sans-serif"],
+              jakarta: ["Plus Jakarta Sans", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #ffffff;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .hide-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .hero-theme {
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+
+      #heroSection[data-theme="millennia"] {
+        background: #ffffff;
+      }
+
+      #heroSection[data-theme="infinia"] {
+        background: linear-gradient(180deg, #041231 0%, #051e47 50%, #010513 100%);
+      }
+
+      #heroSection[data-theme="millennia"] .hero-text-primary {
+        color: #111827;
+      }
+
+      #heroSection[data-theme="millennia"] .hero-text-secondary {
+        color: #7b8995;
+      }
+
+      #heroSection[data-theme="millennia"] .hero-chip {
+        background: rgba(223, 235, 250, 0.5);
+        color: #111827;
+      }
+
+      #heroSection[data-theme="millennia"] .hero-settings-label {
+        color: #4b5563;
+      }
+
+      #heroSection[data-theme="millennia"] .hero-settings-arrow {
+        filter: none;
+      }
+
+      #heroSection[data-theme="millennia"] .hero-info-gradient {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 38.782%);
+      }
+
+      #heroSection[data-theme="infinia"] .hero-text-primary {
+        color: #ffffff;
+      }
+
+      #heroSection[data-theme="infinia"] .hero-text-secondary {
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      #heroSection[data-theme="infinia"] .hero-chip {
+        background: rgba(223, 235, 250, 0.2);
+        color: #ffffff;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      #heroSection[data-theme="infinia"] .hero-settings-label {
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      #heroSection[data-theme="infinia"] .hero-settings-arrow {
+        filter: brightness(0) invert(1);
+      }
+
+      #heroSection[data-theme="infinia"] .hero-info-gradient {
+        background: linear-gradient(180deg, rgba(3, 6, 18, 0) 0%, #030612 42%);
+      }
+
+      .figma-mask {
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        -webkit-mask-position: center;
+      }
+
+      .hero-cards-viewport {
+        touch-action: pan-x pan-y;
+        scroll-snap-type: x mandatory;
+      }
+
+      .hero-cards-viewport > div {
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+      }
+
+      .sequence-frame canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="min-h-full w-full bg-white md:flex md:items-center md:justify-center md:bg-[#eef2f7] md:p-6">
+      <div
+        class="relative h-[100dvh] w-full overflow-hidden bg-white md:h-[844px] md:max-w-[390px] md:rounded-[32px] md:shadow-[0_24px_64px_rgba(15,23,42,0.18)]"
+      >
+        <main id="pageScroll" class="hide-scrollbar absolute inset-0 overflow-y-auto overflow-x-hidden pb-[88px]">
+          <section id="heroSection" data-theme="millennia" class="hero-theme relative h-[688px] overflow-hidden">
+            <div
+              id="cardsViewport"
+              class="hero-cards-viewport hide-scrollbar absolute left-0 top-0 flex h-[779px] w-full overflow-x-auto overflow-y-hidden"
+              aria-label="Cards carousel"
+            >
+              <div class="relative h-[779px] w-full shrink-0">
+                <div class="sequence-frame absolute inset-0" data-card="millennia">
+                  <canvas id="millenniaCanvas" aria-label="Millennia card animation"></canvas>
+                  <div
+                    id="millenniaLoading"
+                    class="pointer-events-none absolute inset-x-0 top-[260px] text-center text-[12px] font-medium text-[#5c6172]"
+                  >
+                    Loading Millennia animation...
+                  </div>
+                </div>
+              </div>
+              <div class="relative h-[775px] w-full shrink-0">
+                <div class="sequence-frame absolute inset-0" data-card="infinia">
+                  <canvas id="infiniaCanvas" aria-label="Infinia card animation"></canvas>
+                  <div
+                    id="infiniaLoading"
+                    class="pointer-events-none absolute inset-x-0 top-[260px] text-center text-[12px] font-medium text-white"
+                  >
+                    Loading Infinia animation...
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="absolute left-0 top-0 z-20 w-full px-[10px] pt-[10px]">
+              <div class="flex items-center justify-between">
+                <div class="flex w-[60px] items-center gap-[5px]">
+                  <div class="relative h-[20px] w-[18.331px] shrink-0">
+                    <img
+                      alt=""
+                      class="absolute inset-0 h-full w-full"
+                      src="http://localhost:3845/assets/09194f1409362b32cbeee110e7ff7a776122fccc.svg"
+                    />
+                    <div class="absolute left-[2.33px] top-[1.97px] grid place-items-start">
+                      <div
+                        class="figma-mask h-[12.548px] w-[12.378px]"
+                        style="
+                          mask-image: url('http://localhost:3845/assets/831b1e7d94767bfd67beb2312e218ac4a015c2b0.svg');
+                          -webkit-mask-image: url('http://localhost:3845/assets/831b1e7d94767bfd67beb2312e218ac4a015c2b0.svg');
+                        "
+                      >
+                        <img
+                          alt=""
+                          class="h-full w-full object-cover"
+                          src="http://localhost:3845/assets/99883ead484ae704af8f9c2ec3dd870d91ca8c30.png"
+                        />
+                      </div>
+                      <img
+                        alt=""
+                        class="absolute left-[0.93px] top-[0.65px] h-[13.86px] w-[13.637px]"
+                        src="http://localhost:3845/assets/427c42ee6f0e398238f1825b29b8658b16b1a210.svg"
+                      />
+                      <img
+                        alt=""
+                        class="absolute left-[7.74px] top-[5.91px] h-[1.187px] w-[1.187px]"
+                        src="http://localhost:3845/assets/3096a3231b776d10435ebfab1443207f19c119ae.svg"
+                      />
+                      <img
+                        alt=""
+                        class="absolute left-[3.56px] top-[6.47px] h-[1.187px] w-[1.187px]"
+                        src="http://localhost:3845/assets/3096a3231b776d10435ebfab1443207f19c119ae.svg"
+                      />
+                      <img
+                        alt=""
+                        class="absolute left-[5.59px] top-[9.16px] h-[1.498px] w-[3.476px]"
+                        src="http://localhost:3845/assets/db7e48d9164d7bd523fd3f2cec308e8cb9baccfe.svg"
+                      />
+                    </div>
+                  </div>
+                  <p class="font-open text-center text-[10px] tracking-[-0.2px] text-[#202e66]">ask EVA</p>
+                </div>
+
+                <div class="relative h-[34.083px] w-[92.102px] overflow-hidden">
+                  <div
+                    class="figma-mask absolute bottom-0 left-0 top-0 w-[28.132px]"
+                    style="
+                      mask-image: url('http://localhost:3845/assets/3f3bdc0b01bd64ae65388dd316bbc545385f6ff7.svg');
+                      -webkit-mask-image: url('http://localhost:3845/assets/3f3bdc0b01bd64ae65388dd316bbc545385f6ff7.svg');
+                    "
+                  >
+                    <img
+                      alt=""
+                      class="h-full w-full object-cover"
+                      src="http://localhost:3845/assets/de10661b478490e9221db0bd15a98e66b59edf29.png"
+                    />
+                  </div>
+                  <img
+                    alt=""
+                    class="absolute bottom-[0.88px] right-0 h-[16.361px] w-[60.601px]"
+                    src="http://localhost:3845/assets/80c5428565d84332f21bbdf22c1992bb76ac655c.svg"
+                  />
+                </div>
+
+                <div class="relative h-[32px] w-[60px] shrink-0">
+                  <div class="absolute right-0 top-0 h-[32px] w-[32px] rounded-full border border-[#3b4355]"></div>
+                  <div class="absolute left-[6px] top-[6px] h-[20px] w-[20px]">
+                    <img
+                      alt=""
+                      class="absolute inset-0 h-full w-full"
+                      src="http://localhost:3845/assets/812423f78803905d4e46858912140073db371a1e.svg"
+                    />
+                    <img
+                      alt=""
+                      class="absolute left-0 top-0 h-[8.5px] w-[8.5px]"
+                      src="http://localhost:3845/assets/e66a8ed75d27ed8b8fa7aaf7633b55e86ceebf22.svg"
+                    />
+                    <img
+                      alt=""
+                      class="absolute right-0 top-0 h-[8.5px] w-[8.5px]"
+                      src="http://localhost:3845/assets/e66a8ed75d27ed8b8fa7aaf7633b55e86ceebf22.svg"
+                    />
+                    <img
+                      alt=""
+                      class="absolute bottom-0 left-0 h-[8.5px] w-[8.5px]"
+                      src="http://localhost:3845/assets/e66a8ed75d27ed8b8fa7aaf7633b55e86ceebf22.svg"
+                    />
+                    <img
+                      alt=""
+                      class="absolute bottom-0 right-0 h-[10px] w-[10px]"
+                      src="http://localhost:3845/assets/a0e8521a1d2c98a91b2bea4090a6153d8f118562.svg"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hide-scrollbar absolute left-0 top-[54px] z-20 w-full overflow-x-auto px-[8px]">
+              <div class="flex min-w-max items-center gap-[8px]">
+                <div class="rounded-[32px] bg-[#1c3fca] px-[12px] py-[8px] text-[12px] font-medium leading-none text-white">
+                  Credit Card
+                </div>
+                <div class="rounded-[32px] bg-[rgba(28,63,202,0.1)] px-[12px] py-[8px] text-[12px] font-medium leading-none text-[#1c3fca]">
+                  Debit Card
+                </div>
+                <div class="rounded-[32px] bg-[rgba(28,63,202,0.1)] px-[12px] py-[8px] text-[12px] font-medium leading-none text-[#1c3fca]">
+                  FastTag
+                </div>
+                <div class="rounded-[32px] bg-[rgba(28,63,202,0.1)] px-[12px] py-[8px] text-[12px] font-medium leading-none text-[#1c3fca]">
+                  Consumer Loan
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-info-gradient absolute left-0 top-[364px] z-20 w-full px-[16px] pb-[24px] pt-[8px]">
+              <div class="flex flex-col items-center gap-[12px] pb-[8px] pt-[12px]">
+                <div class="flex w-full flex-col items-center">
+                  <p class="hero-text-primary text-[10px] font-normal uppercase leading-[1.4]">AVAILABLE CREDIT LIMIT</p>
+                  <div class="flex flex-col items-center">
+                    <p class="hero-text-primary text-[24px] font-bold leading-[1.2]">₹56,422</p>
+                    <p class="hero-text-secondary text-[10px] font-semibold leading-[1.2]">Of ₹1,00,000</p>
+                  </div>
+                </div>
+
+                <div class="hero-chip flex items-center gap-[8px] rounded-[8px] pl-[4px] pr-[8px] py-[4px]">
+                  <img
+                    alt="Visa"
+                    class="h-[18px] w-[24px]"
+                    src="http://localhost:3845/assets/893599c8007be11ed78125b2718d66129233c9ff.svg"
+                  />
+                  <p class="text-[12px] font-medium leading-[1.2]">•••• •••• •••• 9132</p>
+                  <img
+                    alt="Copy"
+                    class="h-[16px] w-[16px] opacity-90"
+                    src="http://localhost:3845/assets/8d1970c434dda248f0b5da3cd7e8667e4daa10fc.svg"
+                  />
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center gap-[8px]">
+                <div class="flex items-center justify-center gap-[3px] py-[8px]">
+                  <p class="hero-settings-label text-center text-[11px] font-normal leading-[1.4]">Card Settings</p>
+                  <img
+                    alt=""
+                    class="hero-settings-arrow h-[12px] w-[12px] -scale-y-100"
+                    src="http://localhost:3845/assets/57b2eafa09ba55a990d943b59f61cea19802baea.svg"
+                  />
+                </div>
+                <img
+                  alt="Card actions"
+                  class="h-[140px] w-full max-w-[326px]"
+                  src="http://localhost:3845/assets/e2f0d2eb440d96cf65b1b8df646b97b0456fe017.svg"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section class="relative z-10 -mt-[26px] rounded-t-[26px] bg-white px-[16px] pb-[32px] pt-[16px]">
+            <img
+              alt=""
+              class="h-[24px] w-full"
+              src="http://localhost:3845/assets/2137ecc080ab16e66eae5e62d1e5b8978b26ed0d.svg"
+            />
+
+            <div class="mt-[16px] space-y-[24px]">
+              <div class="grid grid-cols-4 gap-[0px] rounded-[12px] shadow-[0px_4px_12px_rgba(51,147,255,0.3)]">
+                <div class="flex flex-col items-center justify-center gap-[4px] rounded-[12px] py-[12px]">
+                  <div class="rounded-full bg-[#e6ddfe] p-[12px]">
+                    <img
+                      alt=""
+                      class="h-[20px] w-[20px]"
+                      src="http://localhost:3845/assets/1d6d5a6f5386278f41c2a29e30b7434b8c60149d.svg"
+                    />
+                  </div>
+                  <p class="text-[11px] font-medium leading-[1.4] text-[#030612]">Statement</p>
+                </div>
+                <div class="flex flex-col items-center justify-center gap-[4px] rounded-[12px] py-[12px]">
+                  <div class="rounded-full bg-[#fef0b0] p-[12px]">
+                    <img
+                      alt=""
+                      class="h-[20px] w-[20px]"
+                      src="http://localhost:3845/assets/14058c525fbe3132b29784c883b983d448077939.svg"
+                    />
+                  </div>
+                  <p class="text-[11px] font-medium leading-[1.4] text-[#030612]">Rewards</p>
+                </div>
+                <div class="flex flex-col items-center justify-center gap-[4px] rounded-[12px] py-[12px]">
+                  <div class="rounded-full bg-[#fbdcf6] p-[12px]">
+                    <div class="relative h-[20px] w-[20px] overflow-hidden">
+                      <img
+                        alt=""
+                        class="absolute left-[1px] top-[1px] h-[18px] w-[18px]"
+                        src="http://localhost:3845/assets/94dd6e41b55a1d64225c754c00ac2d603ec80962.svg"
+                      />
+                    </div>
+                  </div>
+                  <p class="text-[11px] font-medium leading-[1.4] text-[#030612]">EMIs</p>
+                </div>
+                <div class="flex flex-col items-center justify-center gap-[4px] rounded-[12px] py-[12px]">
+                  <div class="rounded-full bg-[#c7f9d6] p-[12px]">
+                    <img
+                      alt=""
+                      class="h-[20px] w-[20px]"
+                      src="http://localhost:3845/assets/1297069e5351fe50bde5e3fc9f3103d600f7d723.svg"
+                    />
+                  </div>
+                  <p class="text-[11px] font-medium leading-[1.4] text-[#030612]">Services</p>
+                </div>
+              </div>
+
+              <div class="space-y-[8px]">
+                <div class="rounded-[12px] bg-[#f3f6f9] p-[16px]">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-[20px] font-bold leading-[1.2] text-[#333333]">₹46,578</p>
+                      <p class="text-[11px] font-normal leading-[1.4] text-[#333333]">Statement Due on 12 Feb 2022</p>
+                    </div>
+                    <div class="rounded-[8px] bg-[#1c3fca] px-[16px] py-[8px] text-[12px] font-bold leading-none text-white">
+                      PAY NOW
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-[12px] border border-[#e7eef4] bg-white p-[16px]">
+                  <div class="flex items-start gap-[16px]">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[10px] font-normal uppercase leading-[1.4] text-[#333333]">TOTAL OUTSTANDING</p>
+                      <p class="mt-[4px] text-[16px] font-bold leading-[1.2] text-[#333333]">₹46,578.56</p>
+                    </div>
+                    <div class="w-px self-stretch bg-[#ebf4ff]"></div>
+                    <div class="w-[131.5px]">
+                      <p class="text-[10px] font-normal uppercase leading-[1.4] text-[#333333]">TOTAL UNBILLED</p>
+                      <div class="mt-[4px] flex items-center justify-between">
+                        <p class="text-[16px] font-bold leading-[1.2] text-[#333333]">₹16,569.00</p>
+                        <img
+                          alt=""
+                          class="h-[16px] w-[16px] rotate-180"
+                          src="http://localhost:3845/assets/42645703048c3851ebe4bbee12fb9db80486783e.svg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-[8px]">
+                <p class="text-[12px] font-medium uppercase leading-[1.2] text-[#949a9f]">Explore Products</p>
+                <div class="hide-scrollbar flex gap-[8px] overflow-x-auto">
+                  <div class="relative h-[126px] w-[100px] shrink-0 rounded-[12px] bg-[#e0d1ff]">
+                    <img
+                      alt=""
+                      class="absolute left-[7px] top-[7px] h-[43px] w-[53px] rotate-[11.65deg]"
+                      src="http://localhost:3845/assets/4cf76b9759bd6754cc64139ad0eaee2ee95dbe17.png"
+                    />
+                    <p class="absolute bottom-[12px] left-[12px] w-[79px] text-[11px] font-bold leading-[1.2] text-[#333333]">
+                      Get The Best Card for UPI
+                    </p>
+                  </div>
+                  <div class="relative h-[126px] w-[100px] shrink-0 overflow-hidden rounded-[12px] bg-[#fed6db]">
+                    <img
+                      alt=""
+                      class="absolute left-[-33px] top-[-7px] h-[93px] w-[129px] -scale-y-100 rotate-180 object-cover"
+                      src="http://localhost:3845/assets/7d27ddca79e3ac5d4136c8b260c949c98caa4124.png"
+                    />
+                    <p class="absolute bottom-[12px] left-[12px] w-[84px] text-[11px] font-bold leading-[1.2] text-[#333333]">
+                      Fixed Deposits
+                    </p>
+                  </div>
+                  <div
+                    class="relative h-[126px] w-[100px] shrink-0 overflow-hidden rounded-[12px]"
+                    style="background-image: linear-gradient(211.097deg, rgb(190, 255, 218) 53.885%, rgb(111, 255, 174) 95.657%);"
+                  >
+                    <img
+                      alt=""
+                      class="absolute left-[-16px] top-[-9px] h-[98px] w-[98px] rotate-[5.63deg] object-cover"
+                      src="http://localhost:3845/assets/dfb28b05b18e100cab2cca16cf66b840a2cf082f.png"
+                    />
+                    <p class="absolute bottom-[12px] left-[12px] w-[84px] text-[11px] font-bold leading-[1.2] text-[#333333]">
+                      Get Instant Personal Loan
+                    </p>
+                  </div>
+                  <div
+                    class="relative h-[126px] w-[100px] shrink-0 overflow-hidden rounded-[12px]"
+                    style="background-image: linear-gradient(211.097deg, rgb(211, 242, 248) 53.885%, rgb(133, 238, 255) 95.657%);"
+                  >
+                    <img
+                      alt=""
+                      class="absolute left-[-6px] top-[-18px] h-[122px] w-[135px] rotate-[151.35deg] -scale-y-100 object-contain"
+                      src="http://localhost:3845/assets/69f8724452662e0a85a7c7984883685d3b73cfa1.png"
+                    />
+                    <p class="absolute bottom-[12px] left-[12px] w-[84px] text-[11px] font-bold leading-[1.2] text-[#333333]">
+                      Invest with SmartWealth
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-[16px]">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-[8px]">
+                    <div class="rounded-[32px] bg-[rgba(255,255,255,0.1)] px-[12px] py-[8px] text-[12px] font-medium leading-none text-[#9ca3af]">
+                      Recent Transactions
+                    </div>
+                    <div class="rounded-[32px] bg-[#f5f5f5] px-[12px] py-[8px] text-[12px] font-medium leading-none text-black">
+                      Active EMIs
+                    </div>
+                  </div>
+                  <p class="text-[12px] font-bold uppercase leading-none text-[#1c3fca]">VIEW ALL</p>
+                </div>
+
+                <div class="space-y-[16px]">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-start gap-[12px]">
+                      <div class="relative h-[40px] w-[40px] rounded-[12px] border border-[#ebf4ff] bg-white">
+                        <img alt="" class="absolute left-1/2 top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2" src="http://localhost:3845/assets/2c5806dadf50bb9bb11bdf3abdf004c5bbbd8874.png" />
+                      </div>
+                      <div>
+                        <p class="text-[14px] font-normal leading-[1.4] text-[#333333]">Amazon</p>
+                        <p class="text-[11px] font-medium leading-[1.4] text-[#949a9f]">29 Jan 2022, 11:22 AM</p>
+                      </div>
+                    </div>
+                    <p class="text-[12px] font-bold leading-[1.2] text-[#333333]">₹2,340</p>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-start gap-[12px]">
+                      <div class="relative h-[40px] w-[40px] rounded-[12px] border border-[#ebf4ff] bg-white">
+                        <img alt="" class="absolute left-1/2 top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2" src="http://localhost:3845/assets/a0997a5d576b1947a4f4fefedbe1269bc6084ace.png" />
+                      </div>
+                      <div>
+                        <p class="text-[14px] font-normal leading-[1.4] text-[#333333]">Google Playstore</p>
+                        <p class="text-[11px] font-medium leading-[1.4] text-[#949a9f]">24 Jan 2022, 4:32 PM</p>
+                      </div>
+                    </div>
+                    <p class="text-[12px] font-bold leading-[1.2] text-[#333333]">₹1,200</p>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-start gap-[12px]">
+                      <div class="relative h-[40px] w-[40px] rounded-[12px] border border-[#ebf4ff] bg-white">
+                        <img alt="" class="absolute left-1/2 top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2" src="http://localhost:3845/assets/e380bfc993b3d00a8dad94b5057c22489f060bfb.png" />
+                      </div>
+                      <div>
+                        <p class="text-[14px] font-normal leading-[1.4] text-[#333333]">McDonald's</p>
+                        <p class="text-[11px] font-medium leading-[1.4] text-[#949a9f]">22 Jan 2022, 1:45 PM</p>
+                      </div>
+                    </div>
+                    <p class="text-[12px] font-bold leading-[1.2] text-[#333333]">₹640</p>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-start gap-[12px]">
+                      <div class="relative h-[40px] w-[40px] rounded-[12px] border border-[#ebf4ff] bg-white">
+                        <img alt="" class="absolute left-1/2 top-1/2 h-[24px] w-[24px] -translate-x-1/2 -translate-y-1/2" src="http://localhost:3845/assets/38eae61f7d7097ada92c9b87757a9aa8a7d6d3da.png" />
+                      </div>
+                      <div>
+                        <p class="text-[14px] font-normal leading-[1.4] text-[#333333]">Swiggy</p>
+                        <p class="text-[11px] font-medium leading-[1.4] text-[#949a9f]">20 Jan 2022, 11:22 AM</p>
+                      </div>
+                    </div>
+                    <p class="text-[12px] font-bold leading-[1.2] text-[#333333]">₹765</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between py-[12px]">
+                  <p class="text-[12px] font-medium uppercase leading-[1.2] text-[#949a9f]">GREAT DEALS FOR YOU!</p>
+                  <p class="text-[12px] font-bold leading-none text-[#1c3fca]">View all</p>
+                </div>
+                <div class="hide-scrollbar flex gap-[16px] overflow-x-auto">
+                  <div class="relative h-[183px] w-[268px] shrink-0 overflow-hidden rounded-[16px] bg-[#c1dcff]">
+                    <p class="absolute left-[20px] top-[20px] font-open text-[20px] font-bold leading-normal text-black">₹5000 Off</p>
+                    <p class="absolute left-[20px] top-[47px] w-[120px] font-open text-[14px] font-normal leading-normal text-black">
+                      on apple watches
+                    </p>
+                    <img alt="" class="absolute left-[36px] top-[-17px] h-[234px] w-[234px] rotate-[53.05deg] object-cover mix-blend-multiply" src="http://localhost:3845/assets/dc63b6a2f8bb823dc8e93938b4903eecd237c5b5.png" />
+                    <img alt="" class="absolute left-[8px] top-[127px] h-[35px] w-[62px]" src="http://localhost:3845/assets/99b6aea2ec48e1e4c0096be06f73d6b0667ced2d.png" />
+                  </div>
+                  <div class="relative h-[183px] w-[268px] shrink-0 overflow-hidden rounded-[16px] bg-[#90dfe7]">
+                    <img alt="" class="absolute left-[-10px] top-0 h-[277px] w-[417px] object-cover" src="http://localhost:3845/assets/4b9d49b0e06a04916b500ede089a5a4f3f1f5ca4.png" />
+                    <p class="absolute left-[21px] top-[20px] font-open text-[20px] font-bold leading-normal text-black">Headphones</p>
+                    <p class="absolute left-[21px] top-[47px] font-open text-[14px] font-normal leading-normal text-black">starting ₹500</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between py-[12px]">
+                  <p class="text-[12px] font-medium uppercase leading-[1.2] text-[#949a9f]">YOUR EXCLUSIVE Card BENEFITS</p>
+                  <p class="font-jakarta text-[12px] font-bold leading-none text-[#1c3fca]">View all</p>
+                </div>
+                <div class="hide-scrollbar flex gap-[16px] overflow-x-auto pb-[4px]">
+                  <div class="flex w-[200px] shrink-0 flex-col justify-between overflow-hidden rounded-[12px] border border-[#ecedf3] bg-white px-[16px] py-[20px] shadow-[inset_0px_0px_0px_3px_white,inset_0px_0px_56px_0px_rgba(234,243,255,0.6)]">
+                    <div class="space-y-[16px] text-center">
+                      <p class="text-left text-[12px] font-medium leading-normal text-[#5bbc65]">8 MAY - 8 JUL</p>
+                      <div class="flex justify-center">
+                        <img alt="" class="h-[94px] w-[112px] object-contain" src="http://localhost:3845/assets/df39bd77979bd22fb766c707cd8d731d0b2fb888.png" />
+                      </div>
+                      <div class="space-y-[8px]">
+                        <p class="mx-auto w-[114px] text-[14px] font-semibold text-[#333333]">Membership Rewards Points</p>
+                        <p class="text-[12px] font-normal text-[#444444] opacity-70">Get 15000 Bonus Membership Rewards points</p>
+                      </div>
+                    </div>
+                    <div class="mt-[16px] flex items-center justify-between rounded-[12px] bg-[#ebf4ff] px-[12px] py-[8px] text-[12px] text-[#333333]">
+                      <p class="font-normal leading-[1.4]">₹55k Spent</p>
+                      <p class="font-bold leading-[1.2]">₹1.90L</p>
+                    </div>
+                  </div>
+
+                  <div class="flex w-[200px] shrink-0 flex-col justify-between overflow-hidden rounded-[12px] border border-[#ecedf3] bg-white px-[16px] py-[20px] shadow-[inset_0px_0px_0px_3px_white,inset_0px_0px_56px_0px_rgba(234,243,255,0.6)]">
+                    <div class="space-y-[16px] text-center">
+                      <p class="text-left text-[12px] font-medium leading-normal text-[#5bbc65]">8 MAY - 8 JUL</p>
+                      <div class="flex justify-center">
+                        <img alt="" class="h-[97px] w-[89px] -scale-y-100 rotate-180 object-contain" src="http://localhost:3845/assets/b83ab57af6e7d292cdc64804c93255e0719ded76.png" />
+                      </div>
+                      <div class="space-y-[8px]">
+                        <p class="mx-auto w-[114px] text-[14px] font-semibold text-[#333333]">Complementary Lounge Visits</p>
+                        <p class="text-[12px] font-normal text-[#444444] opacity-70">2 complementary visits to domestic lounge per quarter</p>
+                      </div>
+                    </div>
+                    <div class="mt-[16px] flex items-center justify-between rounded-[12px] bg-[#ebf4ff] px-[12px] py-[8px] text-[12px] text-[#333333]">
+                      <p class="font-normal leading-[1.4]">Availed</p>
+                      <p class="font-bold leading-[1.2]">1<span class="font-normal">/2</span></p>
+                    </div>
+                  </div>
+
+                  <div class="flex w-[200px] shrink-0 flex-col justify-between overflow-hidden rounded-[12px] border border-[#ecedf3] bg-white px-[16px] py-[20px] shadow-[inset_0px_0px_0px_3px_white,inset_0px_0px_56px_0px_rgba(234,243,255,0.6)]">
+                    <div class="space-y-[16px] text-center">
+                      <p class="text-left text-[12px] font-medium leading-normal text-[#5bbc65]">8 MAY - 8 JUL</p>
+                      <div class="flex justify-center">
+                        <img alt="" class="h-[100px] w-[97px] -scale-y-100 rotate-180 object-contain" src="http://localhost:3845/assets/50b7fb6376adbe0f0ceb64e81642fc72fc4fa8cf.png" />
+                      </div>
+                      <div class="space-y-[8px]">
+                        <p class="mx-auto w-[114px] text-[14px] font-semibold text-[#333333]">Pass to VIP Air Lounge</p>
+                        <p class="text-[12px] font-normal text-[#444444] opacity-70">Access to 1200+ VIP Air lounges with a priority pass membership</p>
+                      </div>
+                    </div>
+                    <div class="mt-[16px] flex items-center justify-between rounded-[12px] bg-[#ebf4ff] px-[12px] py-[8px] text-[12px] text-[#333333]">
+                      <p class="font-normal leading-[1.4]">Claimed</p>
+                      <img alt="" class="h-[16px] w-[16px]" src="http://localhost:3845/assets/d31c8ac622a79ed6d4a8ad3ee4aee36456cbaee0.svg" />
+                    </div>
+                  </div>
+
+                  <div class="flex w-[200px] shrink-0 flex-col justify-between overflow-hidden rounded-[12px] border border-[#ecedf3] bg-white px-[16px] py-[20px] shadow-[inset_0px_0px_0px_3px_white,inset_0px_0px_56px_0px_rgba(234,243,255,0.6)]">
+                    <div class="space-y-[16px] text-center">
+                      <p class="text-left text-[12px] font-medium leading-normal text-[#5bbc65]">8 MAY - 8 JUL</p>
+                      <div class="flex justify-center">
+                        <img alt="" class="h-[97px] w-[92px] object-contain" src="http://localhost:3845/assets/c28b82d5e71b5dd150edcb3c7d5cb5c3ece9e450.png" />
+                      </div>
+                      <div class="space-y-[8px]">
+                        <p class="mx-auto w-[114px] text-[14px] font-semibold text-[#333333]">Reward Points + Taj Voucher</p>
+                        <p class="text-[12px] font-normal text-[#444444] opacity-70">Get 25000 Bonus Membership Rewards points and Taj voucher</p>
+                      </div>
+                    </div>
+                    <div class="mt-[16px] flex items-center justify-between rounded-[12px] bg-[#ebf4ff] px-[12px] py-[8px] text-[12px] text-[#333333]">
+                      <p class="font-normal leading-[1.4]">₹55k Spent</p>
+                      <p class="font-bold leading-[1.2]">₹1.90L</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <nav
+          class="absolute bottom-0 left-0 right-0 z-30 grid h-[71px] grid-cols-5 bg-white shadow-[0px_-4px_24px_rgba(0,0,0,0.1)]"
+          aria-label="Bottom Navigation"
+        >
+          <div class="relative flex flex-col items-center justify-end gap-[8px] border-t border-[#d0ddfc] py-[12px]">
+            <img alt="" class="h-[20px] w-[20px]" src="http://localhost:3845/assets/306162c22fe2e1dc0fc17ae250bf208f34367842.svg" />
+            <p class="text-center text-[12px] font-semibold leading-[16px] tracking-[-0.12px] text-[#1c3fca]">Home</p>
+          </div>
+          <div class="relative flex flex-col items-center justify-end gap-[8px] border-t border-[#d0ddfc] py-[12px]">
+            <div class="grid h-[20px] w-[20px] grid-cols-3 gap-[2px]">
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+              <span class="h-[4px] w-[4px] rounded-full bg-[#5c6172]"></span>
+            </div>
+            <p class="text-center text-[12px] font-normal leading-[16px] text-[#5c6172]">Services</p>
+          </div>
+          <div class="relative flex items-start justify-center">
+            <div class="absolute -top-[9px] flex h-[80px] w-[72px] items-start justify-center">
+              <img alt="" class="absolute inset-0 h-full w-full" src="http://localhost:3845/assets/7feb27ce0504b764d10dff61daa0ff8069775595.svg" />
+              <img alt="" class="absolute -top-[1px] h-[12px] w-[72px]" src="http://localhost:3845/assets/b899fd003d83ad917383e1a93e95a6de3b8e8184.svg" />
+              <img alt="" class="absolute -top-[1px] h-[13px] w-[72px]" src="http://localhost:3845/assets/bab08d0b23bbd5e2ad7b609d0eb06808da3ef157.svg" />
+              <div
+                class="absolute left-1/2 top-[10px] flex h-[52px] w-[52px] -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-l-[1.5px] border-t-[1.5px] border-[rgba(255,255,255,0.2)] shadow-[0px_2.603px_43.803px_rgba(51,149,255,0.25)]"
+                style="background-image: linear-gradient(96.340192deg, rgb(16, 24, 58) 0%, rgb(17, 34, 102) 100%);"
+              >
+                <div class="flex items-center gap-[4px]">
+                  <img alt="" class="h-[37px] w-[37px]" src="http://localhost:3845/assets/22fd99add76cc54a93ebb528c0f733a66080ef82.svg" />
+                  <span
+                    class="bg-clip-text text-[13.56px] font-bold tracking-[-0.2712px] text-transparent"
+                    style="background-image: linear-gradient(90deg, rgb(255,255,255) 0%, rgb(255,255,255) 100%), linear-gradient(203.513deg, rgb(88,103,219) 13.937%, rgb(155,89,231) 97.113%);"
+                  >
+                    AskNow
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-end gap-[8px] border-t border-[#d0ddfc] py-[12px]">
+            <img alt="" class="h-[20px] w-[20px]" src="http://localhost:3845/assets/9e6573456a39399423419660c43f77f981acdc8f.svg" />
+            <p class="text-center text-[12px] font-normal leading-[16px] text-[#5c6172]">Help</p>
+          </div>
+          <div class="flex flex-col items-center justify-end gap-[8px] border-t border-[#d0ddfc] py-[12px]">
+            <img alt="" class="h-[20px] w-[20px]" src="http://localhost:3845/assets/574086c73e8a82859fea8579307b4682f4e0c041.svg" />
+            <p class="text-center text-[12px] font-normal leading-[16px] text-[#5c6172]">Track</p>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var pageScroll = document.getElementById("pageScroll");
+        var cardsViewport = document.getElementById("cardsViewport");
+        var heroSection = document.getElementById("heroSection");
+
+        var cards = [
+          {
+            id: "millennia",
+            canvas: document.getElementById("millenniaCanvas"),
+            loading: document.getElementById("millenniaLoading"),
+            basePath: "assets/animation/millennia_card/",
+            filePrefix: "Millennia Card",
+            progress: 0,
+            frameCount: 65,
+            images: [],
+            loadedCount: 0,
+            lastDrawnFrame: -1,
+          },
+          {
+            id: "infinia",
+            canvas: document.getElementById("infiniaCanvas"),
+            loading: document.getElementById("infiniaLoading"),
+            basePath: "assets/animation/infinia_card/",
+            filePrefix: "Infinia Card",
+            progress: 0,
+            frameCount: 65,
+            images: [],
+            loadedCount: 0,
+            lastDrawnFrame: -1,
+          },
+        ];
+
+        var activeIndex = 0;
+        var introDistance = Math.max(65 * 20, 1200);
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchX = 0;
+        var touchY = 0;
+        var gestureDirection = null;
+
+        function pad4(n) {
+          return String(n).padStart(4, "0");
+        }
+
+        function frameUrl(card, index) {
+          return card.basePath + encodeURIComponent(card.filePrefix + pad4(index + 1) + ".png");
+        }
+
+        function resolveDrawableFrame(card, index) {
+          if (card.images[index]) return index;
+          for (var offset = 1; offset < card.frameCount; offset += 1) {
+            var prev = index - offset;
+            if (prev >= 0 && card.images[prev]) return prev;
+            var next = index + offset;
+            if (next < card.frameCount && card.images[next]) return next;
+          }
+          return -1;
+        }
+
+        function resizeCanvas(card) {
+          var rect = card.canvas.parentElement.getBoundingClientRect();
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          var targetW = Math.max(1, Math.round(rect.width * dpr));
+          var targetH = Math.max(1, Math.round(rect.height * dpr));
+          if (card.canvas.width !== targetW || card.canvas.height !== targetH) {
+            card.canvas.width = targetW;
+            card.canvas.height = targetH;
+            card.lastDrawnFrame = -1;
+            drawCard(card);
+          }
+        }
+
+        function drawCard(card) {
+          var frameIndex = Math.round((card.frameCount - 1) * card.progress);
+          if (frameIndex === card.lastDrawnFrame) return;
+          var drawableIndex = resolveDrawableFrame(card, frameIndex);
+          if (drawableIndex < 0) return;
+          var image = card.images[drawableIndex];
+          if (!image) return;
+
+          var ctx = card.canvas.getContext("2d", { alpha: true, desynchronized: true });
+          if (!ctx) return;
+
+          var cw = card.canvas.width;
+          var ch = card.canvas.height;
+          var iw = image.naturalWidth || image.width;
+          var ih = image.naturalHeight || image.height;
+          if (!cw || !ch || !iw || !ih) return;
+
+          var scale = Math.max(cw / iw, ch / ih);
+          var drawW = iw * scale;
+          var drawH = ih * scale;
+          var x = (cw - drawW) * 0.5;
+          var y = 0;
+
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.filter = "brightness(1.25)";
+          ctx.drawImage(image, x, y, drawW, drawH);
+          ctx.filter = "none";
+          card.lastDrawnFrame = frameIndex;
+        }
+
+        function updateLoading(card) {
+          if (!card.loading) return;
+          var pct = Math.round((card.loadedCount / card.frameCount) * 100);
+          card.loading.textContent =
+            "Loading " + (card.id === "millennia" ? "Millennia" : "Infinia") + " animation... " + pct + "%";
+          if (card.loadedCount > 0) {
+            card.loading.style.display = "none";
+          }
+        }
+
+        function loadFrame(card, index, highPriority) {
+          return new Promise(function (resolve, reject) {
+            if (card.images[index]) {
+              resolve(card.images[index]);
+              return;
+            }
+            var img = new Image();
+            img.decoding = "async";
+            if (highPriority && "fetchPriority" in img) {
+              img.fetchPriority = "high";
+            }
+            img.src = frameUrl(card, index);
+            img.onload = function () {
+              card.images[index] = img;
+              card.loadedCount += 1;
+              card.lastDrawnFrame = -1;
+              updateLoading(card);
+              drawCard(card);
+              resolve(img);
+            };
+            img.onerror = function () {
+              reject(new Error("Failed to load " + frameUrl(card, index)));
+            };
+          });
+        }
+
+        function preloadCard(card) {
+          loadFrame(card, 0, true).catch(function () {});
+          for (var i = 1; i < card.frameCount; i += 1) {
+            loadFrame(card, i, false).catch(function () {});
+          }
+        }
+
+        function clamp01(value) {
+          if (value < 0) return 0;
+          if (value > 1) return 1;
+          return value;
+        }
+
+        function setTheme(index) {
+          var theme = cards[index].id === "infinia" ? "infinia" : "millennia";
+          heroSection.setAttribute("data-theme", theme);
+        }
+
+        function getActiveIndex() {
+          var width = cardsViewport.clientWidth || 1;
+          return Math.max(0, Math.min(cards.length - 1, Math.round(cardsViewport.scrollLeft / width)));
+        }
+
+        function updateActiveCard() {
+          activeIndex = getActiveIndex();
+          setTheme(activeIndex);
+        }
+
+        function advanceIntro(deltaY) {
+          if (deltaY === 0) return false;
+          if (pageScroll.scrollTop > 0) return false;
+
+          var card = cards[activeIndex];
+          var next = clamp01(card.progress + deltaY / introDistance);
+          if (next === card.progress) return false;
+
+          card.progress = next;
+          card.lastDrawnFrame = -1;
+          drawCard(card);
+          pageScroll.scrollTop = 0;
+          return true;
+        }
+
+        function onWheel(event) {
+          updateActiveCard();
+          if (advanceIntro(event.deltaY)) {
+            event.preventDefault();
+          }
+        }
+
+        function onTouchStart(event) {
+          if (event.touches.length !== 1) return;
+          touchX = touchStartX = event.touches[0].clientX;
+          touchY = touchStartY = event.touches[0].clientY;
+          gestureDirection = null;
+        }
+
+        function onTouchMove(event) {
+          if (event.touches.length !== 1) return;
+          var currentX = event.touches[0].clientX;
+          var currentY = event.touches[0].clientY;
+
+          if (!gestureDirection) {
+            var dx = Math.abs(currentX - touchStartX);
+            var dy = Math.abs(currentY - touchStartY);
+            if (dx > 5 || dy > 5) {
+              gestureDirection = dy > dx ? "vertical" : "horizontal";
+            }
+          }
+
+          if (gestureDirection === "horizontal") {
+            touchX = currentX;
+            touchY = currentY;
+            return;
+          }
+
+          var deltaY = touchY - currentY;
+          updateActiveCard();
+          if (advanceIntro(deltaY * 3.5)) {
+            event.preventDefault();
+          }
+
+          touchX = currentX;
+          touchY = currentY;
+        }
+
+        function onResize() {
+          cards.forEach(resizeCanvas);
+          updateActiveCard();
+        }
+
+        cards.forEach(function (card) {
+          resizeCanvas(card);
+          preloadCard(card);
+        });
+
+        updateActiveCard();
+
+        cardsViewport.addEventListener("scroll", updateActiveCard, { passive: true });
+        pageScroll.addEventListener("wheel", onWheel, { passive: false });
+        pageScroll.addEventListener("touchstart", onTouchStart, { passive: true });
+        pageScroll.addEventListener("touchmove", onTouchMove, { passive: false });
+        window.addEventListener("resize", onResize);
+        window.addEventListener("orientationchange", onResize);
+      })();
+    </script>
+  </body>
+</html>
