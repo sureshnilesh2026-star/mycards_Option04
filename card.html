@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=overlays-content"
+    />
     <title></title>
     <script>
       window.tailwind = window.tailwind || {};
@@ -42,6 +45,18 @@
         padding: 0;
         box-sizing: border-box;
         background: #ffffff;
+      }
+      @media (min-width: 768px) {
+        body {
+          justify-content: center;
+          padding: 24px;
+          background: #edf2fb;
+        }
+        .mobile-page {
+          max-width: 430px;
+          border-radius: 28px;
+          box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+        }
       }
       /* Mobile shell: viewport height; only .frame-root__scrollable scrolls so header + bottom bar stay put */
       .mobile-page {
@@ -926,6 +941,7 @@
         overflow: hidden;
         background: transparent;
         transform: translateY(var(--below-ui-shift));
+        touch-action: none;
       }
       .frame-root__product-tabs + .infinia_top_content {
         margin-top: -12px;
@@ -3836,7 +3852,10 @@
         var canvas = document.getElementById("infinia-card-canvas");
         var loadingEl = document.getElementById("infinia-card-loading");
         var frameShell = canvas ? canvas.closest(".card_animation__frame") : null;
-        var scrollContainer = document.querySelector(".frame-root__scrollable");
+        var frameRootEl = canvas ? canvas.closest(".infinia_content") : null;
+        var scrollContainer = frameRootEl
+          ? frameRootEl.querySelector(".frame-root__scrollable")
+          : null;
 
         if (!canvas || !frameShell) return;
 
@@ -3853,7 +3872,6 @@
         var rafId = 0;
         var lastDrawnFrame = -1;
         var scaleSetter = null;
-        var frameRootEl = canvas.closest(".infinia_content");
 
         function pad4(n) {
           return String(n).padStart(4, "0");
@@ -4371,128 +4389,133 @@
     </script>
     <script>
       (function () {
-        var scrollEl = document.querySelector(".frame-root__scrollable");
-        var animatedCards = document.querySelectorAll(".cc_swigy, .cc_infinia, .cc_tatanue, .cc_millenia");
-        var frameRoot = document.querySelector(".frame-root");
-        if (!scrollEl || !animatedCards.length) return;
+        function bindMaskInteraction(rootEl) {
+          var scrollEl = rootEl.querySelector(".frame-root__scrollable");
+          var animatedCards = rootEl.querySelectorAll(
+            ".cc_swigy, .cc_infinia, .cc_tatanue, .cc_millenia"
+          );
+          var frameRoot = rootEl.querySelector(".frame-root");
+          if (!scrollEl || !animatedCards.length || !frameRoot) return;
 
-        var MIN_MASK_SCALE = 0.56;
-        var MASK_SCROLL_SENSITIVITY = 0.0012;
-        var maskScale = 1;
-        var touchY = null;
-        var touchX = null;
-        var touchStartX = null;
-        var touchStartY = null;
-        var gestureDirection = null;
+          var MIN_MASK_SCALE = 0.56;
+          var MASK_SCROLL_SENSITIVITY = 0.0012;
+          var maskScale = 1;
+          var touchY = null;
+          var touchX = null;
+          var touchStartX = null;
+          var touchStartY = null;
+          var gestureDirection = null;
 
-        function applyMaskScale() {
-          animatedCards.forEach(function (card) {
-            card.style.setProperty("--swiggy-mask-scale", String(maskScale));
-          });
-          var progress = (1 - maskScale) / (1 - MIN_MASK_SCALE);
-          if (progress < 0) progress = 0;
-          if (progress > 1) progress = 1;
-          animatedCards.forEach(function (card) {
-            card.style.setProperty("--swiggy-mask-progress", String(progress));
-          });
-          if (frameRoot) {
+          function applyMaskScale() {
+            animatedCards.forEach(function (card) {
+              card.style.setProperty("--swiggy-mask-scale", String(maskScale));
+            });
+            var progress = (1 - maskScale) / (1 - MIN_MASK_SCALE);
+            if (progress < 0) progress = 0;
+            if (progress > 1) progress = 1;
+            animatedCards.forEach(function (card) {
+              card.style.setProperty("--swiggy-mask-progress", String(progress));
+            });
             frameRoot.style.setProperty("--below-ui-shift", (-progress * 64).toFixed(2) + "px");
           }
-        }
 
-        function updateMaskByDelta(deltaY) {
-          if (deltaY === 0) return false;
-          var isAtTop = scrollEl.scrollTop <= 0;
-          if (!isAtTop) return false;
+          function updateMaskByDelta(deltaY) {
+            if (deltaY === 0) return false;
+            var isAtTop = scrollEl.scrollTop <= 0;
+            if (!isAtTop) return false;
 
-          if (deltaY > 0 && maskScale > MIN_MASK_SCALE) {
-            maskScale = Math.max(
-              MIN_MASK_SCALE,
-              maskScale - deltaY * MASK_SCROLL_SENSITIVITY
-            );
-            applyMaskScale();
-            return true;
+            if (deltaY > 0 && maskScale > MIN_MASK_SCALE) {
+              maskScale = Math.max(
+                MIN_MASK_SCALE,
+                maskScale - deltaY * MASK_SCROLL_SENSITIVITY
+              );
+              applyMaskScale();
+              return true;
+            }
+
+            if (deltaY < 0 && maskScale < 1) {
+              maskScale = Math.min(1, maskScale + (-deltaY) * MASK_SCROLL_SENSITIVITY);
+              applyMaskScale();
+              return true;
+            }
+
+            return false;
           }
 
-          if (deltaY < 0 && maskScale < 1) {
-            maskScale = Math.min(
-              1,
-              maskScale + (-deltaY) * MASK_SCROLL_SENSITIVITY
-            );
-            applyMaskScale();
-            return true;
-          }
+          scrollEl.__cardMaskAdvanceBy = updateMaskByDelta;
 
-          return false;
-        }
-
-        scrollEl.__cardMaskAdvanceBy = updateMaskByDelta;
-
-        scrollEl.addEventListener(
-          "wheel",
-          function (event) {
-            // Only drive mask animation from primarily vertical wheel gestures.
-            if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-            if (updateMaskByDelta(event.deltaY)) {
-              event.preventDefault();
-            }
-          },
-          { passive: false }
-        );
-
-        scrollEl.addEventListener(
-          "touchstart",
-          function (event) {
-            if (event.touches.length === 1) {
-              touchX = event.touches[0].clientX;
-              touchY = event.touches[0].clientY;
-              touchStartX = touchX;
-              touchStartY = touchY;
-              gestureDirection = null;
-            }
-          },
-          { passive: true }
-        );
-
-        scrollEl.addEventListener(
-          "touchmove",
-          function (event) {
-            if (touchY === null || touchX === null || event.touches.length !== 1) return;
-            var currentX = event.touches[0].clientX;
-            var currentY = event.touches[0].clientY;
-            
-            if (!gestureDirection) {
-              var dx = Math.abs(currentX - touchStartX);
-              var dy = Math.abs(currentY - touchStartY);
-              if (dx > 5 || dy > 5) {
-                gestureDirection = dy > dx ? "vertical" : "horizontal";
+          scrollEl.addEventListener(
+            "wheel",
+            function (event) {
+              if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+              if (updateMaskByDelta(event.deltaY)) {
+                event.preventDefault();
               }
-            }
-            if (gestureDirection === "horizontal") return;
+            },
+            { passive: false }
+          );
 
-            var deltaX = touchX - currentX;
-            var deltaY = touchY - currentY;
-            var isVerticalGesture = Math.abs(deltaY) > Math.abs(deltaX);
-            if ((gestureDirection === "vertical" || isVerticalGesture) && updateMaskByDelta(deltaY * 3.5)) {
-              event.preventDefault();
-            }
-            touchX = currentX;
-            touchY = currentY;
-          },
-          { passive: false }
-        );
+          scrollEl.addEventListener(
+            "touchstart",
+            function (event) {
+              if (event.touches.length === 1) {
+                touchX = event.touches[0].clientX;
+                touchY = event.touches[0].clientY;
+                touchStartX = touchX;
+                touchStartY = touchY;
+                gestureDirection = null;
+              }
+            },
+            { passive: true }
+          );
 
-        scrollEl.addEventListener(
-          "touchend",
-          function () {
-            touchX = null;
-            touchY = null;
-            gestureDirection = null;
-          },
-          { passive: true }
-        );
+          scrollEl.addEventListener(
+            "touchmove",
+            function (event) {
+              if (touchY === null || touchX === null || event.touches.length !== 1) return;
+              var currentX = event.touches[0].clientX;
+              var currentY = event.touches[0].clientY;
 
-        applyMaskScale();
+              if (!gestureDirection) {
+                var dx = Math.abs(currentX - touchStartX);
+                var dy = Math.abs(currentY - touchStartY);
+                if (dx > 5 || dy > 5) {
+                  gestureDirection = dy > dx ? "vertical" : "horizontal";
+                }
+              }
+              if (gestureDirection === "horizontal") return;
+
+              var deltaX = touchX - currentX;
+              var deltaY = touchY - currentY;
+              var isVerticalGesture = Math.abs(deltaY) > Math.abs(deltaX);
+              if (
+                (gestureDirection === "vertical" || isVerticalGesture) &&
+                updateMaskByDelta(deltaY * 3.5)
+              ) {
+                event.preventDefault();
+              }
+              touchX = currentX;
+              touchY = currentY;
+            },
+            { passive: false }
+          );
+
+          scrollEl.addEventListener(
+            "touchend",
+            function () {
+              touchX = null;
+              touchY = null;
+              gestureDirection = null;
+            },
+            { passive: true }
+          );
+
+          applyMaskScale();
+        }
+
+        document
+          .querySelectorAll(".infinia_content, .millenia_content")
+          .forEach(bindMaskInteraction);
       })();
     </script>
     <script>
