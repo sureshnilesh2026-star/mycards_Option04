@@ -255,13 +255,72 @@
       }
 
       #heroSection {
+        container-type: inline-size;
+        container-name: hero;
         --card-settings-panel-space: 156px;
         --card-settings-content-shift: 0px;
         --card-settings-card-shift: 0px;
-        height: calc(556px + var(--card-settings-panel-space));
+        height: calc(100cqw * 556 / 360 + var(--card-settings-panel-space));
         transition:
           height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
           background 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      #cardsViewport {
+        height: calc(100cqw * 779 / 360);
+      }
+
+      .hero-cards-viewport > div:nth-child(1) {
+        height: calc(100cqw * 779 / 360);
+      }
+
+      .hero-cards-viewport > div:nth-child(2) {
+        height: calc(100cqw * 775 / 360);
+      }
+
+      .hero-filter-chip-row {
+        top: calc(100cqw * 54 / 360);
+      }
+
+      #heroCardDots {
+        top: calc(100cqw * -8 / 360);
+      }
+
+      #heroInfoLayer .hero-credit-limit-label,
+      #heroInfoLayer .hero-credit-secondary {
+        font-size: calc(100cqw * 10 / 360);
+      }
+
+      #heroInfoLayer .hero-credit-amount {
+        font-size: calc(100cqw * 24 / 360);
+      }
+
+      #heroInfoLayer .hero-chip-pan {
+        font-size: calc(100cqw * 12 / 360);
+      }
+
+      #heroInfoLayer .hero-chip-brand-slot {
+        height: calc(100cqw * 18 / 360);
+        width: calc(100cqw * 28 / 360);
+      }
+
+      #heroInfoLayer .hero-chip-card-millennia {
+        height: calc(100cqw * 18 / 360);
+        width: calc(100cqw * 28 / 360);
+      }
+
+      #heroInfoLayer .hero-chip-copy {
+        width: calc(100cqw * 16 / 360);
+        height: calc(100cqw * 16 / 360);
+      }
+
+      #heroInfoLayer .hero-infinia-details-img {
+        max-width: calc(100cqw * 180 / 360);
+      }
+
+      .hero-card-loading-msg {
+        top: calc(100cqw * 260 / 360);
+        font-size: calc(100cqw * 12 / 360);
       }
 
       .hero-cards-viewport {
@@ -373,6 +432,7 @@
       }
 
       #heroInfoLayer {
+        top: calc(100cqw * 380 / 360);
         transform: translateY(calc(var(--card-settings-content-shift) + var(--intro-info-shift)));
         transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
@@ -415,8 +475,8 @@
 
       .hero-card-dots__dot {
         box-sizing: border-box;
-        height: 6px;
-        width: 6px;
+        height: calc(100cqw * 6 / 360);
+        width: calc(100cqw * 6 / 360);
         flex-shrink: 0;
         border-radius: 9999px;
         padding: 0;
@@ -443,7 +503,7 @@
       }
 
       #heroSection[data-theme="millennia"] .hero-card-dots__dot--active {
-        width: 18px;
+        width: calc(100cqw * 18 / 360);
         background: #1c3fca;
       }
 
@@ -452,7 +512,7 @@
       }
 
       #heroSection[data-theme="infinia"] .hero-card-dots__dot--active {
-        width: 18px;
+        width: calc(100cqw * 18 / 360);
         background: #a3a3a3;
       }
     </style>
@@ -473,26 +533,26 @@
           <section id="heroSection" data-theme="millennia" class="hero-theme relative overflow-hidden">
             <div
               id="cardsViewport"
-              class="hero-cards-viewport hide-scrollbar absolute left-0 top-0 flex h-[779px] w-full overflow-x-auto overflow-y-hidden"
+              class="hero-cards-viewport hide-scrollbar absolute left-0 top-0 flex w-full overflow-x-auto overflow-y-hidden"
               aria-label="Cards carousel"
             >
-              <div class="relative h-[779px] w-full shrink-0">
+              <div class="relative w-full shrink-0">
                 <div class="sequence-frame absolute inset-0" data-card="millennia">
                   <canvas id="millenniaCanvas" aria-label="Millennia card animation"></canvas>
                   <div
                     id="millenniaLoading"
-                    class="pointer-events-none absolute inset-x-0 top-[260px] text-center text-[12px] font-medium text-[#5c6172]"
+                    class="hero-card-loading-msg pointer-events-none absolute inset-x-0 text-center font-medium text-[#5c6172]"
                   >
                     Loading Millennia animation...
                   </div>
                 </div>
               </div>
-              <div class="relative h-[775px] w-full shrink-0">
+              <div class="relative w-full shrink-0">
                 <div class="sequence-frame absolute inset-0" data-card="infinia">
                   <canvas id="infiniaCanvas" aria-label="Infinia card animation"></canvas>
                   <div
                     id="infiniaLoading"
-                    class="pointer-events-none absolute inset-x-0 top-[260px] text-center text-[12px] font-medium text-white"
+                    class="hero-card-loading-msg pointer-events-none absolute inset-x-0 text-center font-medium text-white"
                   >
                     Loading Infinia animation...
                   </div>
@@ -561,7 +621,7 @@
               </svg>
             </div>
 
-            <div class="hide-scrollbar absolute left-0 top-[54px] z-20 w-full overflow-x-auto px-[8px]">
+            <div class="hero-filter-chip-row hide-scrollbar absolute left-0 z-20 w-full overflow-x-auto px-[8px]">
               <div class="flex min-w-max items-center gap-[8px]">
                 <div
                   class="hero-card-filter-chip hero-card-filter-chip-active rounded-[32px] bg-[#1c3fca] px-[12px] py-[8px] text-[12px] font-medium leading-none text-white"
@@ -588,7 +648,7 @@
 
             <div
               id="heroInfoLayer"
-              class="hero-info-gradient absolute left-0 top-[380px] z-20 w-full overflow-visible px-[16px] pb-[24px] pt-[8px]"
+              class="hero-info-gradient absolute left-0 z-20 w-full overflow-visible px-[16px] pb-[24px] pt-[8px]"
             >
               <div
                 id="heroCardDots"
@@ -616,16 +676,16 @@
 
               <div class="flex flex-col items-center gap-[12px] pb-[8px] pt-[12px]">
                 <div class="flex w-full flex-col items-center">
-                  <p class="hero-text-primary hero-credit-limit-label text-[10px] font-normal uppercase leading-[1.4]">
+                  <p class="hero-text-primary hero-credit-limit-label font-normal uppercase leading-[1.4]">
                     AVAILABLE CREDIT LIMIT
                   </p>
                   <div class="flex flex-col items-center">
-                    <p class="hero-text-primary text-[24px] font-bold leading-[1.2]">
+                    <p class="hero-text-primary hero-credit-amount font-bold leading-[1.2]">
                       <span class="theme-amount-pair theme-amount-pair--center">
                         <span class="amount-m">₹56,422</span><span class="amount-i">₹75,500</span>
                       </span>
                     </p>
-                    <p class="hero-text-secondary text-[10px] font-semibold leading-[1.2]">Of ₹1,00,000</p>
+                    <p class="hero-text-secondary hero-credit-secondary font-semibold leading-[1.2]">Of ₹1,00,000</p>
                   </div>
                 </div>
 
@@ -634,11 +694,11 @@
                     <div class="hero-chip-brand-slot">
                       <img
                         alt="Mastercard"
-                        class="hero-chip-card-millennia h-[18px] w-[28px] object-contain object-left"
+                        class="hero-chip-card-millennia object-contain object-left"
                         src="assets/master_card_logo.png"
                       />
                     </div>
-                    <p class="text-[12px] font-medium leading-[1.2]">•••• •••• •••• 9132</p>
+                    <p class="hero-chip-pan font-medium leading-[1.2]">•••• •••• •••• 9132</p>
                     <svg
                       class="hero-chip-copy shrink-0"
                       width="16"
@@ -672,7 +732,7 @@
                       alt="Card number ending 9132"
                       width="180"
                       height="26"
-                      class="mx-auto block h-auto w-full max-w-[180px] shrink-0"
+                      class="hero-infinia-details-img mx-auto block h-auto w-full shrink-0"
                       src="assets/infinia-card-details-row.svg"
                       decoding="async"
                     />
@@ -1279,9 +1339,10 @@
           if (!pageScroll) return;
           var card = cards[activeIndex];
           var progress = card ? card.progress : 0;
-          var infoShift = Math.round(-112 * progress);
+          var scale = heroSection && heroSection.clientWidth ? heroSection.clientWidth / 360 : 1;
+          var infoShift = Math.round(-112 * scale * progress);
           if (progress >= 1) {
-            infoShift += 8;
+            infoShift += Math.round(8 * scale);
           }
           pageScroll.style.setProperty("--intro-info-shift", infoShift + "px");
         }
@@ -1348,6 +1409,7 @@
         function onResize() {
           cards.forEach(resizeCanvas);
           updateActiveCard();
+          syncIntroMotion();
         }
 
         function setCardSettingsOpen(isOpen) {
