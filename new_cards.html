@@ -329,7 +329,7 @@
         position: relative;
         height: 140px;
         width: 100%;
-        max-width: 326px;
+        max-width: min(326px, 100%);
       }
 
       #cardSettingsPanel .card-settings-art-millennia,
@@ -339,7 +339,7 @@
         top: 0;
         height: 140px;
         width: 100%;
-        max-width: 326px;
+        max-width: min(326px, 100%);
         transform: translateX(-50%);
         object-fit: contain;
         object-position: top center;
@@ -459,10 +459,10 @@
   </head>
   <body>
     <div
-      class="flex min-h-[100dvh] w-full min-w-0 flex-col items-center bg-white md:min-h-screen md:flex-row md:items-center md:justify-center md:bg-[#eef2f7] md:p-6"
+      class="flex min-h-[100dvh] w-full min-w-0 flex-col items-stretch bg-white md:min-h-screen md:flex-row md:items-center md:justify-center md:bg-[#eef2f7] md:p-6"
     >
       <div
-        class="relative mx-auto h-[100dvh] w-full min-w-0 max-w-[360px] overflow-hidden bg-white md:mx-0 md:h-[844px] md:w-[360px] md:max-w-none md:flex-shrink-0 md:shadow-[0_24px_64px_rgba(15,23,42,0.18)]"
+        class="relative mx-auto h-[100dvh] w-full min-w-0 max-w-full overflow-hidden bg-white md:mx-0 md:h-[844px] md:w-[360px] md:max-w-[360px] md:flex-shrink-0 md:shadow-[0_24px_64px_rgba(15,23,42,0.18)]"
       >
         <main
           id="pageScroll"
@@ -672,7 +672,7 @@
                       alt="Card number ending 9132"
                       width="180"
                       height="26"
-                      class="block h-[26px] w-[180px] max-w-none shrink-0"
+                      class="mx-auto block h-auto w-full max-w-[180px] shrink-0"
                       src="assets/infinia-card-details-row.svg"
                       decoding="async"
                     />
@@ -735,7 +735,7 @@
 
             <div class="space-y-[16px] px-[16px]">
               <div id="content1" class="flex justify-center overflow-hidden rounded-[12px]">
-                <img alt="" class="h-auto w-full max-w-[352px]" src="assets/content-options-frame.svg" />
+                <img alt="" class="h-auto w-full max-w-full" src="assets/content-options-frame.svg" />
               </div>
 
               <div id="content2" class="space-y-[8px]">
