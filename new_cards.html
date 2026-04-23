@@ -350,11 +350,11 @@
       }
 
       .hero-settings-toggle[aria-expanded="true"] .hero-settings-arrow {
-        transform: rotate(-90deg) scaleY(1);
+        transform: rotate(180deg);
       }
 
       .hero-settings-toggle[aria-expanded="false"] .hero-settings-arrow {
-        transform: rotate(-90deg) scaleY(-1);
+        transform: rotate(0deg);
       }
 
       #cardSettingsPanel {
@@ -773,9 +773,16 @@
                     aria-hidden="true"
                   >
                     <path
-                      d="M2.5 4.25L6 7.75L9.5 4.25"
-                      stroke="currentColor"
-                      stroke-width="1.2"
+                      d="M3 9L6 6.33333L9 9"
+                      stroke="#9CA3AF"
+                      stroke-width="1.33333"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M3 5L6 2.33333L9 5"
+                      stroke="#9CA3AF"
+                      stroke-width="1.33333"
                       stroke-linecap="round"
                       stroke-linejoin="round"
                     />
@@ -1117,6 +1124,8 @@
         var carouselSnapTimer = 0;
         var carouselAnimFrame = 0;
         var isCarouselAnimating = false;
+        var introAnimFrame = 0;
+        var lastIntroTick = 0;
 
         function pad4(n) {
           return String(n).padStart(4, "0");
@@ -1128,11 +1137,11 @@
 
         function resolveDrawableFrame(card, index) {
           if (card.images[index]) return index;
-          for (var offset = 1; offset < card.frameCount; offset += 1) {
-            var prev = index - offset;
-            if (prev >= 0 && card.images[prev]) return prev;
-            var next = index + offset;
-            if (next < card.frameCount && card.images[next]) return next;
+          for (var prev = index - 1; prev >= 0; prev -= 1) {
+            if (card.images[prev]) return prev;
+          }
+          for (var next = index + 1; next < card.frameCount; next += 1) {
+            if (card.images[next]) return next;
           }
           return -1;
         }
@@ -1151,7 +1160,7 @@
         }
 
         function drawCard(card) {
-          var frameIndex = Math.round((card.frameCount - 1) * card.progress);
+          var frameIndex = Math.floor((card.frameCount - 1) * card.progress + 0.0001);
           if (frameIndex === card.lastDrawnFrame) return;
           var drawableIndex = resolveDrawableFrame(card, frameIndex);
           if (drawableIndex < 0) return;
@@ -1352,15 +1361,50 @@
           if (pageScroll.scrollTop > 0) return false;
 
           var card = cards[activeIndex];
-          var next = clamp01(card.progress + deltaY / introDistance);
-          if (next === card.progress) return false;
-
-          card.progress = next;
-          card.lastDrawnFrame = -1;
-          drawCard(card);
-          syncIntroMotion();
+          var next = clamp01(card.targetProgress + deltaY / introDistance);
+          if (next === card.targetProgress) return false;
+          card.targetProgress = next;
+          startIntroAnimation();
           pageScroll.scrollTop = 0;
           return true;
+        }
+
+        function tickIntroAnimation(timestamp) {
+          if (!lastIntroTick) lastIntroTick = timestamp;
+          var dt = Math.max(0, timestamp - lastIntroTick);
+          lastIntroTick = timestamp;
+          var needsMore = false;
+
+          for (var i = 0; i < cards.length; i += 1) {
+            var card = cards[i];
+            var diff = card.targetProgress - card.progress;
+            if (Math.abs(diff) < 0.0004) {
+              if (card.progress !== card.targetProgress) {
+                card.progress = card.targetProgress;
+                drawCard(card);
+              }
+              continue;
+            }
+
+            var lerp = Math.min(1, dt / 110);
+            card.progress += diff * lerp;
+            card.progress = clamp01(card.progress);
+            drawCard(card);
+            needsMore = true;
+          }
+
+          syncIntroMotion();
+          if (needsMore) {
+            introAnimFrame = requestAnimationFrame(tickIntroAnimation);
+          } else {
+            introAnimFrame = 0;
+            lastIntroTick = 0;
+          }
+        }
+
+        function startIntroAnimation() {
+          if (introAnimFrame) return;
+          introAnimFrame = requestAnimationFrame(tickIntroAnimation);
         }
 
         function onWheel(event) {
@@ -1423,6 +1467,7 @@
         }
 
         cards.forEach(function (card) {
+          card.targetProgress = card.progress;
           resizeCanvas(card);
           preloadCard(card);
         });
